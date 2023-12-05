@@ -1,0 +1,70 @@
+<team_prop_parameters>
+  <color_channel_circles>
+    <gray_parameters>
+      <median_target>150</median_target>
+      <threshold_low>170</threshold_low>
+    </gray_parameters>
+    <hough_circles_function_call_parameters>
+      <dp>1.0</dp>
+      <minDist>50.0</minDist>
+      <!-- 
+        param1 is the higher threshold of the two passed to the Canny edge detector (the lower one is twice
+      smaller). 
+      -->
+      <param1>200.0</param1>
+      <param2>20.0</param2>
+      <minRadius>5</minRadius>
+      <maxRadius>100</maxRadius>
+      <!-- full circles 
+      <dp>3.0</dp>
+      <minDist>50.0</minDist>
+      <param1>100.0</param1>
+      <param2>150.0</param2>
+      <minRadius>5</minRadius>
+      <maxRadius>100</maxRadius>
+      -->
+    </hough_circles_function_call_parameters>
+    <criteria>
+      <max_circles>1</max_circles>
+    </criteria>
+  </color_channel_circles>
+
+  <!-- For use with OpenCV findContours -->
+  <color_channel_contours>
+    <gray_parameters>
+      <median_target>150</median_target>
+      <threshold_low>220</threshold_low>
+    </gray_parameters>
+
+    <!-- Note: if you include FloodFill then you'll need
+     some additional parameters.
+    <floodfill_function_call_parameters>
+    </floodfill_function_call_parameters -->
+
+    <criteria>
+      <min_area>3000.0</min_area>
+      <max_area>7000.0</max_area>
+    </criteria>
+  </color_channel_contours>
+
+  <color_channel_pixel_count>
+    <gray_parameters>
+      <median_target>150</median_target>
+      <threshold_low>200</threshold_low>
+    </gray_parameters>
+    <criteria>
+      <min_white_pixel_count>3000</min_white_pixel_count>
+    </criteria>
+  </color_channel_pixel_count>
+
+  <!-- Can be used for full image grayscale or color channel grayscale -->
+  <bright_spot>
+    <gray_parameters>
+      <median_target>150</median_target>
+      <!-- color channel 220; grayscale 180 -->
+      <threshold_low>220</threshold_low>
+    </gray_parameters>
+    <blur_kernel>31.0</blur_kernel>
+  </bright_spot>
+
+</team_prop_parameters>

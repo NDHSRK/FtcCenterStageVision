@@ -1,0 +1,140 @@
+<RobotAction>
+    <!-- For Team Prop recognition include only the FIND_TEAM_PROP 
+         element for each competition starting position. -->
+    <!-- All spike window values under <team_prop_recognition> are relative to the image ROI.
+         The left_window may enclose the LEFT_SPIKE or the CENTER_SPIKE, depending on the
+         robot's starting position. For example, for BLUE_A2 the left_window encloses the
+         CENTER_SPIKE. -->
+    <OpMode id="BLUE_A2">
+        <actions>
+            <FIND_TEAM_PROP>
+                <image_parameters>
+                    <image_source>front_webcam</image_source>
+                    <resolution>
+                        <width>640</width>
+                        <height>480</height>
+                    </resolution>
+                    <image_roi>
+                        <x>123</x>
+                        <y>154</y>
+                        <width>492</width>
+                        <height>239</height>
+                    </image_roi>
+                </image_parameters>
+                <team_prop_recognition>
+                    <recognition_path>color_channel_circles</recognition_path>
+                    <left_window>
+                        <width>322</width>
+                        <prop_location>CENTER_SPIKE</prop_location>
+                    </left_window>
+                    <right_window>
+                        <prop_location>RIGHT_SPIKE</prop_location>
+                    </right_window>
+                    <team_prop_npos>
+                        <prop_location>LEFT_SPIKE</prop_location>
+                    </team_prop_npos>
+                </team_prop_recognition>
+            </FIND_TEAM_PROP>
+        </actions>
+    </OpMode>
+
+    <OpMode id="BLUE_A4">
+        <actions>
+            <FIND_TEAM_PROP>
+                <image_parameters>
+                    <image_source>front_webcam</image_source>
+                    <resolution>
+                        <width>640</width>
+                        <height>480</height>
+                    </resolution>
+                    <image_roi>
+                        <x>48</x>
+                        <y>148</y>
+                        <width>486</width>
+                        <height>250</height>
+                    </image_roi>
+                </image_parameters>
+                <team_prop_recognition>
+                    <recognition_path>color_channel_circles</recognition_path>
+                    <left_window>
+                        <width>167</width>
+                        <prop_location>LEFT_SPIKE</prop_location>
+                    </left_window>
+                    <right_window>
+                        <prop_location>CENTER_SPIKE</prop_location>
+                    </right_window>
+                    <team_prop_npos>
+                        <prop_location>RIGHT_SPIKE</prop_location>
+                    </team_prop_npos>
+                </team_prop_recognition>
+            </FIND_TEAM_PROP>
+        </actions>
+    </OpMode>
+
+    <OpMode id="RED_F2">
+        <actions>
+            <FIND_TEAM_PROP>
+                <image_parameters>
+                    <image_source>front_webcam</image_source>
+                    <resolution>
+                        <width>640</width>
+                        <height>480</height>
+                    </resolution>
+                    <image_roi>
+                        <x>39</x>
+                        <y>153</y>
+                        <width>502</width>
+                        <height>234</height>
+                    </image_roi>
+                </image_parameters>
+                <team_prop_recognition>
+                    <recognition_path>color_channel_circles</recognition_path>
+                    <left_window>
+                        <width>182</width>
+                        <prop_location>LEFT_SPIKE</prop_location>
+                    </left_window>
+                    <right_window>
+                        <prop_location>CENTER_SPIKE</prop_location>
+                    </right_window>
+                    <team_prop_npos>
+                        <prop_location>RIGHT_SPIKE</prop_location>
+                    </team_prop_npos>
+                </team_prop_recognition>
+            </FIND_TEAM_PROP>
+        </actions>
+    </OpMode>
+
+    <OpMode id="RED_F4">
+        <actions>
+            <FIND_TEAM_PROP>
+                <image_parameters>
+                    <image_source>front_webcam</image_source>
+                    <resolution>
+                        <width>640</width>
+                        <height>480</height>
+                    </resolution>
+                    <image_roi>
+                        <x>132</x>
+                        <y>160</y>
+                        <width>489</width>
+                        <height>248</height>
+                    </image_roi>
+                </image_parameters>
+                <team_prop_recognition>
+                    <recognition_path>color_channel_circles</recognition_path>
+                    <left_window>
+                        <width>312</width>
+                        <prop_location>CENTER_SPIKE</prop_location>
+                    </left_window>
+                    <right_window>
+                        <prop_location>RIGHT_SPIKE</prop_location>
+                    </right_window>
+                    <team_prop_npos>
+                        <prop_location>LEFT_SPIKE</prop_location>
+                    </team_prop_npos>
+                </team_prop_recognition>
+            </FIND_TEAM_PROP>
+        </actions>
+    </OpMode>
+
+</RobotAction>
