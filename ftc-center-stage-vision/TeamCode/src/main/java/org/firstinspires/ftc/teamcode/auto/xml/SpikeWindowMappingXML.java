@@ -36,7 +36,7 @@ import java.util.EnumMap;
 public class SpikeWindowMappingXML {
 
     public static final String TAG = SpikeWindowMappingXML.class.getSimpleName();
-    private static final String FILE_NAME = "RobotAction.xml";
+    private static final String FILE_NAME = "RobotAction Vision.xml";
 
     private final Document document;
     private final XPath xpath;

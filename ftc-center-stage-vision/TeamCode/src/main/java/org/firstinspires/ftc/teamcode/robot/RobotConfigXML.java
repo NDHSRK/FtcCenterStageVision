@@ -32,7 +32,7 @@ import javax.xml.xpath.XPathExpressionException;
 public class RobotConfigXML {
 
     public static final String TAG = "RobotConfigXML";
-    private static final String FILE_NAME = "RobotConfigVision.xml";
+    private static final String FILE_NAME = "RobotConfig Vision.xml";
 
     // IntelliJ only
     /*

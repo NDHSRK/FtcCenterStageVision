@@ -15,16 +15,16 @@
                         <height>480</height>
                     </resolution>
                     <image_roi>
-                        <x>123</x>
-                        <y>154</y>
-                        <width>492</width>
-                        <height>239</height>
+                        <x>118</x>
+                        <y>270</y>
+                        <width>515</width>
+                        <height>159</height>
                     </image_roi>
                 </image_parameters>
                 <team_prop_recognition>
-                    <recognition_path>color_channel_circles</recognition_path>
+                    <recognition_path>color_channel_pixel_count</recognition_path>
                     <left_window>
-                        <width>322</width>
+                        <width>335</width>
                         <prop_location>CENTER_SPIKE</prop_location>
                     </left_window>
                     <right_window>
@@ -48,16 +48,16 @@
                         <height>480</height>
                     </resolution>
                     <image_roi>
-                        <x>48</x>
-                        <y>148</y>
-                        <width>486</width>
-                        <height>250</height>
+                        <x>32</x>
+                        <y>282</y>
+                        <width>520</width>
+                        <height>142</height>
                     </image_roi>
                 </image_parameters>
                 <team_prop_recognition>
-                    <recognition_path>color_channel_circles</recognition_path>
+                    <recognition_path>color_channel_bright_spot</recognition_path>
                     <left_window>
-                        <width>167</width>
+                        <width>180</width>
                         <prop_location>LEFT_SPIKE</prop_location>
                     </left_window>
                     <right_window>
@@ -81,16 +81,16 @@
                         <height>480</height>
                     </resolution>
                     <image_roi>
-                        <x>39</x>
-                        <y>153</y>
-                        <width>502</width>
-                        <height>234</height>
+                        <x>16</x>
+                        <y>288</y>
+                        <width>532</width>
+                        <height>142</height>
                     </image_roi>
                 </image_parameters>
                 <team_prop_recognition>
-                    <recognition_path>color_channel_circles</recognition_path>
+                    <recognition_path>color_channel_pixel_count</recognition_path>
                     <left_window>
-                        <width>182</width>
+                        <width>200</width>
                         <prop_location>LEFT_SPIKE</prop_location>
                     </left_window>
                     <right_window>
@@ -114,16 +114,16 @@
                         <height>480</height>
                     </resolution>
                     <image_roi>
-                        <x>132</x>
-                        <y>160</y>
-                        <width>489</width>
-                        <height>248</height>
+                        <x>101</x>
+                        <y>275</y>
+                        <width>519</width>
+                        <height>162</height>
                     </image_roi>
                 </image_parameters>
                 <team_prop_recognition>
-                    <recognition_path>color_channel_circles</recognition_path>
+                    <recognition_path>color_channel_bright_spot</recognition_path>
                     <left_window>
-                        <width>312</width>
+                        <width>337</width>
                         <prop_location>CENTER_SPIKE</prop_location>
                     </left_window>
                     <right_window>
