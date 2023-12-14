@@ -1,5 +1,5 @@
 // Port of XMLCommon.cpp
-package org.firstinspires.ftc.teamcode.auto.xml;
+package org.firstinspires.ftc.teamcode.common.xml;
 
 import com.qualcomm.robotcore.util.RobotLog;
 

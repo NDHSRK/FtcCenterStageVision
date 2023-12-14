@@ -1,13 +1,12 @@
 package org.firstinspires.ftc.teamcode.teleop.opmodes.configure;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.ftcdevcommon.platform.android.WorkingDirectory;
 import org.firstinspires.ftc.teamcode.common.RobotConstants;
-import org.firstinspires.ftc.teamcode.common.StartParametersXML;
+import org.firstinspires.ftc.teamcode.common.xml.StartParametersXML;
 import org.firstinspires.ftc.teamcode.teleop.common.FTCButton;
 import org.xml.sax.SAXException;
 

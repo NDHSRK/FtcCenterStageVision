@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.common;
+package org.firstinspires.ftc.teamcode.common.xml;
 
 import com.qualcomm.robotcore.util.RobotLog;
 
