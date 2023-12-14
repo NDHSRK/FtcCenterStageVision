@@ -55,7 +55,7 @@
                     </image_roi>
                 </image_parameters>
                 <team_prop_recognition>
-                    <recognition_path>color_channel_bright_spot</recognition_path>
+                    <recognition_path>color_channel_pixel_count</recognition_path>
                     <left_window>
                         <width>180</width>
                         <prop_location>LEFT_SPIKE</prop_location>
@@ -121,7 +121,7 @@
                     </image_roi>
                 </image_parameters>
                 <team_prop_recognition>
-                    <recognition_path>color_channel_bright_spot</recognition_path>
+                    <recognition_path>color_channel_pixel_count</recognition_path>
                     <left_window>
                         <width>337</width>
                         <prop_location>CENTER_SPIKE</prop_location>
