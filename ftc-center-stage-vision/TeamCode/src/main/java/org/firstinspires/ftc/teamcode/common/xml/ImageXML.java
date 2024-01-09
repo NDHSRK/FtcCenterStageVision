@@ -38,7 +38,7 @@ public class ImageXML {
         int resolution_height;
         Rect image_roi;
 
-        RobotLog.d(TAG, "Parsing XML image_parameters");
+        //RobotLog.dd(TAG, "Parsing XML image_parameters");
 
         if ((pImageParametersNode == null) || !pImageParametersNode.getNodeName().equals("image_parameters"))
             throw new AutonomousRobotException(TAG, "Missing required <image_parameters> element");
@@ -159,7 +159,7 @@ public class ImageXML {
         int median_target;
         int threshold_low;
 
-        RobotLog.d(TAG, "Parsing XML gray_parameters");
+        //RobotLog.dd(TAG, "Parsing XML gray_parameters");
 
         if ((pGrayNode == null) || !pGrayNode.getNodeName().equals("gray_parameters"))
             throw new AutonomousRobotException(TAG, "Missing required <gray_parameters> element");
@@ -211,7 +211,7 @@ public class ImageXML {
         int value_median_target;
         int value_threshold_low;
 
-        RobotLog.d(TAG, "Parsing XML hsv_parameters");
+        //RobotLog.dd(TAG, "Parsing XML hsv_parameters");
         
         if ((pHSVNode == null) || !pHSVNode.getNodeName().equals("hsv_parameters"))
             throw new AutonomousRobotException(TAG, "Missing required <hsv_parameters> element");
@@ -222,7 +222,7 @@ public class ImageXML {
             throw new AutonomousRobotException(TAG, "Element 'hue_name' missing or empty");
 
         hue_name = hue_name_node.getTextContent();
-        RobotLog.d(TAG, "Parsed XML hsv_parameters; hue name = " + hue_name);
+        //RobotLog.dd(TAG, "Parsed XML hsv_parameters; hue name = " + hue_name);
 
         Node hue_low_node = hue_name_node.getNextSibling();
         hue_low_node = XMLUtils.getNextElement(hue_low_node);

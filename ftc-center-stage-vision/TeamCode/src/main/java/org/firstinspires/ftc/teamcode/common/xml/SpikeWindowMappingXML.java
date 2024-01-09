@@ -49,6 +49,7 @@ public class SpikeWindowMappingXML {
 
     public SpikeWindowMappingXML(String pRobotActionFilename) throws ParserConfigurationException, SAXException, IOException {
 
+        RobotLog.ii(TAG, "Parsing spike window mapping from " + pRobotActionFilename);
     /*
     // IntelliJ only
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();

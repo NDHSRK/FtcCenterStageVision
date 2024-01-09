@@ -101,10 +101,11 @@ public class TeamPropAuto {
         // Read the parameters for team prop recognition from the xml file.
         TeamPropParametersXML teamPropParametersXML = new TeamPropParametersXML(xmlDirectory);
         teamPropParameters = teamPropParametersXML.getTeamPropParameters();
+        RobotLog.ii(TAG, "Done parsing TeamPropParameters.xml");
 
         // Note: if no COMPETITION or AUTO_TEST OpMode in RobotAction.XML contains
         // the action FIND_TEAM_PROP then collectedSpikeWindowData will be empty.
-        SpikeWindowMappingXML spikeWindowMappingXML = new SpikeWindowMappingXML(xmlDirectory);
+        SpikeWindowMappingXML spikeWindowMappingXML = new SpikeWindowMappingXML(robot.startParameters.robotActionFilename);
         opModeSpikeWindowMapping = spikeWindowMappingXML.collectSpikeWindowMapping(pOpMode);
 
         if (opModeSpikeWindowMapping == null)
@@ -113,6 +114,8 @@ public class TeamPropAuto {
         // Read the parameters for the backdrop from the xml file.
         BackdropParametersXML backdropParametersXML = new BackdropParametersXML(xmlDirectory);
         backdropParameters = backdropParametersXML.getBackdropParameters();
+
+        RobotLog.ii(TAG, "Done parsing BackdropParameters.xml");
 
         // Start the front webcam with the raw webcam frame processor.
         // We can start a camera by using the <START_CAMERA> action in RobotAction.xml

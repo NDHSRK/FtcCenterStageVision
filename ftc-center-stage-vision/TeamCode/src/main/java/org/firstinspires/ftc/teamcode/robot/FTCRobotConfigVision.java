@@ -66,7 +66,7 @@ public class FTCRobotConfigVision {
 
                 if (webcamYesNo.equals("yes")) {
                     configuredWebcamsLocal = configXML.getConfiguredWebcams();
-                    RobotLog.d(TAG, "Number of webcams configured " + configuredWebcamsLocal.size());
+                    RobotLog.ii(TAG, "Number of webcams configured " + configuredWebcamsLocal.size());
                     if (configuredWebcamsLocal.size() > 2)
                         throw new AutonomousRobotException(TAG, "CenterStage season: only two webcams at mnost are supported");
 
@@ -109,7 +109,7 @@ public class FTCRobotConfigVision {
             // configured camera.
             VisionPortalWebcamConfiguration.ConfiguredWebcam configuredWebcamObject = configuredWebcam.get();
             configuredWebcamObject.setWebcamName(webcamName);
-            RobotLog.i(TAG, "Webcam hardware device " + webcamId +
+            RobotLog.ii(TAG, "Webcam hardware device " + webcamId +
                     " is associated by serial number " + webcamName.getSerialNumber() +
                     " with configured webcam " + configuredWebcamObject.internalWebcamId);
         }

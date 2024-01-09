@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.robot;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.ftcdevcommon.AutonomousRobotException;
-import org.firstinspires.ftc.ftcdevcommon.platform.android.RobotLogCommon;
 import org.firstinspires.ftc.ftcdevcommon.xml.RobotXMLElement;
 import org.firstinspires.ftc.ftcdevcommon.xml.XMLUtils;
 import org.firstinspires.ftc.ftcdevcommon.xml.XPathAccess;
@@ -101,7 +100,7 @@ public class RobotConfigXML {
             }
         }
 
-        RobotLog.i(TAG, "In RobotConfigXML; opened and parsed the XML file");
+        RobotLog.ii(TAG, "In RobotConfigXML; opened and parsed the XML file");
     }
 
     public XPathAccess getPath(String pElementName) {
@@ -148,7 +147,7 @@ public class RobotConfigXML {
         XMLUtils.processElements(webcam_set_elements, (each_webcam) -> {
             VisionPortalWebcamConfiguration.ConfiguredWebcam webcamData = parseWebcamData(each_webcam);
 
-            RobotLogCommon.d(TAG, "Configuring webcam with serial number " + webcamData.serialNumber);
+            RobotLog.dd(TAG, "Configuring webcam with serial number " + webcamData.serialNumber);
 
             // Make sure there are no duplicate webcam ids or serial numbers.
             Optional<RobotConstantsCenterStage.InternalWebcamId> duplicate = configuredWebcams.entrySet().stream()
@@ -174,7 +173,7 @@ public class RobotConfigXML {
 
         RobotConstantsCenterStage.InternalWebcamId webcamId =
                 RobotConstantsCenterStage.InternalWebcamId.valueOf(id_node.getTextContent().toUpperCase());
-        RobotLogCommon.c(TAG, "Webcam with internal id " + webcamId + " is in the configuration");
+        RobotLog.ii(TAG, "Webcam with internal id " + webcamId + " is in the configuration");
 
         // <serial_number>
         Node serial_number_node = id_node.getNextSibling();

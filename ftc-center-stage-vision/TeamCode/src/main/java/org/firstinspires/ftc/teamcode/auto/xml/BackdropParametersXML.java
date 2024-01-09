@@ -29,6 +29,8 @@ public class BackdropParametersXML {
 
     public BackdropParametersXML(String pXMLDir) {
         try {
+            RobotLog.ii(TAG, "Parsing BackdropParameters.xml");
+
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             dbFactory.setIgnoringComments(true);
 
@@ -57,8 +59,6 @@ public class BackdropParametersXML {
         XPathExpression expr;
 
         // Point to the first node.
-        RobotLog.dd(TAG, "Parsing XML backdrop_parameters");
-
         expr = xpath.compile("//backdrop_parameters");
         Node backdrop_parameters_node = (Node) expr.evaluate(document, XPathConstants.NODE);
         if (backdrop_parameters_node == null)
