@@ -33,9 +33,16 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.RobotLog;
 
+import org.firstinspires.ftc.ftcdevcommon.AutonomousRobotException;
 import org.firstinspires.ftc.teamcode.auto.opmodes.utils.TeamPropAuto;
 import org.firstinspires.ftc.teamcode.common.RobotConstants;
 import org.firstinspires.ftc.teamcode.common.RobotConstantsCenterStage;
+import org.xml.sax.SAXException;
+
+import java.io.IOException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPathException;
 
 @Autonomous(name = "Team Prop A4", group = "Auto")
 //@Disabled
@@ -48,9 +55,14 @@ public class TeamPropA4 extends LinearOpMode {
         telemetry.update();
 
         // Initialize Team Prop recognition.
-        TeamPropAuto teamPropAuto = new TeamPropAuto(this, RobotConstants.Alliance.BLUE, RobotConstantsCenterStage.OpMode.BLUE_A4);
+        TeamPropAuto teamPropAuto;
+        try {
+            teamPropAuto = new TeamPropAuto(this, RobotConstants.Alliance.BLUE, RobotConstantsCenterStage.OpMode.BLUE_A4);
+        } catch (ParserConfigurationException | SAXException | XPathException | IOException e) {
+            throw new AutonomousRobotException(TAG, e.getMessage());
+        }
 
-        telemetry.addData(TAG, "Waiting for start ...");
+            telemetry.addData(TAG, "Waiting for start ...");
         telemetry.update();
 
         // Wait for the game to start (driver presses PLAY)

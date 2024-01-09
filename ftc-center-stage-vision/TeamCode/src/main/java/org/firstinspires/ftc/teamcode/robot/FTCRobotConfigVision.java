@@ -10,6 +10,8 @@ import org.firstinspires.ftc.ftcdevcommon.xml.XPathAccess;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.common.RobotConstants;
 import org.firstinspires.ftc.teamcode.common.RobotConstantsCenterStage;
+import org.firstinspires.ftc.teamcode.common.StartParameters;
+import org.firstinspires.ftc.teamcode.common.xml.StartParametersXML;
 import org.firstinspires.ftc.teamcode.robot.device.camera.VisionPortalWebcamConfiguration;
 import org.xml.sax.SAXException;
 
@@ -26,6 +28,7 @@ public class FTCRobotConfigVision {
     private static final String TAG = FTCRobotConfigVision.class.getSimpleName();
 
     private final HardwareMap hardwareMap;
+    public final StartParameters startParameters;
 
     public final EnumMap<RobotConstantsCenterStage.InternalWebcamId, VisionPortalWebcamConfiguration.ConfiguredWebcam> configuredWebcams;
 
@@ -39,7 +42,14 @@ public class FTCRobotConfigVision {
 
         // Get the hardware configuration parameters from RobotConfig.xml.
         try {
-            RobotConfigXML configXML = new RobotConfigXML(xmlDirectory);
+            // Get the startup parameters (including the exact file name of
+            // RobotConfig XXX.xml).
+            // Get the configurable startup parameters.
+            StartParametersXML startParametersXML = new StartParametersXML(xmlDirectory);
+            startParameters = startParametersXML.getStartParameters();
+            RobotLog.ii(TAG, "Configuring the robot from " + startParameters.robotConfigFilename);
+
+            RobotConfigXML configXML = new RobotConfigXML(startParameters.robotConfigFilename);
             XPathAccess configXPath;
 
             // In a competition the webcam(s) would be configured in and

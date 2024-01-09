@@ -35,7 +35,6 @@ import java.util.EnumMap;
 public class SpikeWindowMappingXML {
 
     public static final String TAG = SpikeWindowMappingXML.class.getSimpleName();
-    private static final String FILE_NAME = "RobotAction Vision.xml";
 
     private final Document document;
     private final XPath xpath;
@@ -48,7 +47,7 @@ public class SpikeWindowMappingXML {
             "http://www.w3.org/2001/XMLSchema";
      */
 
-    public SpikeWindowMappingXML(String pWorkingDirectory) throws ParserConfigurationException, SAXException, IOException {
+    public SpikeWindowMappingXML(String pRobotActionFilename) throws ParserConfigurationException, SAXException, IOException {
 
     /*
     // IntelliJ only
@@ -74,7 +73,7 @@ public class SpikeWindowMappingXML {
         // End Android or IntelliJ
 
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-        document = dBuilder.parse(new File(pWorkingDirectory + FILE_NAME));
+        document = dBuilder.parse(new File(pRobotActionFilename));
 
         XPathFactory xpathFactory = XPathFactory.newInstance();
         xpath = xpathFactory.newXPath();
@@ -123,7 +122,7 @@ public class SpikeWindowMappingXML {
         String findTeamPropPath = "/RobotAction/OpMode[@id=" + "'" + pOpMode + "']" + "/actions/FIND_TEAM_PROP";
         Node find_team_propNode = (Node) xpath.evaluate(findTeamPropPath, document, XPathConstants.NODE);
         if (find_team_propNode == null) {
-            // RobotLog.d(TAG, "No path to " + pOpMode + "/FIND_TEAM_PROP");
+            // RobotLog.dd(TAG, "No path to " + pOpMode + "/FIND_TEAM_PROP");
             return null;
         }
 

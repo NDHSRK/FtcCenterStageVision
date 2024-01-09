@@ -35,6 +35,8 @@ import com.qualcomm.robotcore.util.RobotLog;
 import org.firstinspires.ftc.ftcdevcommon.AutonomousRobotException;
 import org.firstinspires.ftc.ftcdevcommon.Pair;
 import org.firstinspires.ftc.ftcdevcommon.platform.android.WorkingDirectory;
+import org.firstinspires.ftc.teamcode.auto.vision.BackdropParameters;
+import org.firstinspires.ftc.teamcode.auto.xml.BackdropParametersXML;
 import org.firstinspires.ftc.teamcode.common.SpikeWindowMapping;
 import org.firstinspires.ftc.teamcode.auto.vision.TeamPropParameters;
 import org.firstinspires.ftc.teamcode.auto.vision.TeamPropRecognition;
@@ -44,16 +46,21 @@ import org.firstinspires.ftc.teamcode.auto.xml.TeamPropParametersXML;
 import org.firstinspires.ftc.teamcode.common.RobotConstants;
 import org.firstinspires.ftc.teamcode.common.RobotConstantsCenterStage;
 import org.firstinspires.ftc.teamcode.robot.FTCRobotConfigVision;
+import org.firstinspires.ftc.teamcode.robot.device.camera.RawFrameAccess;
 import org.firstinspires.ftc.teamcode.robot.device.camera.RawFrameProcessor;
-import org.firstinspires.ftc.teamcode.robot.device.camera.RawFrameWebcam;
+import org.firstinspires.ftc.teamcode.robot.device.camera.VisionPortalWebcam;
 import org.firstinspires.ftc.teamcode.robot.device.camera.VisionPortalWebcamConfiguration;
 import org.firstinspires.ftc.vision.VisionProcessor;
+import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
+import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.Objects;
 
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPathException;
 import javax.xml.xpath.XPathExpressionException;
 
 public class TeamPropAuto {
@@ -62,12 +69,18 @@ public class TeamPropAuto {
     private final LinearOpMode linear;
     private final RobotConstants.Alliance alliance;
     private final FTCRobotConfigVision robot;
+    private final int autoStartDelay;
+    private final EnumMap<RobotConstantsCenterStage.OpMode, RobotConstantsCenterStage.AutoEndingPosition> autoEndingPositions;
     TeamPropParameters teamPropParameters;
     SpikeWindowMapping opModeSpikeWindowMapping;
+    private final BackdropParameters backdropParameters;
+    private final EnumSet<RobotConstantsCenterStage.InternalWebcamId> openWebcams = EnumSet.noneOf(RobotConstantsCenterStage.InternalWebcamId.class);
+
     RobotConstantsCenterStage.InternalWebcamId openWebcam = RobotConstantsCenterStage.InternalWebcamId.WEBCAM_NPOS;
 
     public TeamPropAuto(LinearOpMode pLinear, RobotConstants.Alliance pAlliance,
-                        RobotConstantsCenterStage.OpMode pOpMode) throws InterruptedException {
+                        RobotConstantsCenterStage.OpMode pOpMode)
+            throws ParserConfigurationException, SAXException, XPathException, IOException {
         linear = pLinear;
         alliance = pAlliance;
 
@@ -79,48 +92,65 @@ public class TeamPropAuto {
         String workingDirectory = WorkingDirectory.getWorkingDirectory();
         String xmlDirectory = workingDirectory + RobotConstants.XML_DIR;
 
+        // Get the configurable delay at Autonomous startup.
+        autoStartDelay = robot.startParameters.autoStartDelay;
+
+        // Get the ending positions of the robot for all competition
+        // OpModes.
+        autoEndingPositions = robot.startParameters.autoEndingPositions;
+
         // Read the parameters for team prop recognition from the xml file.
         TeamPropParametersXML teamPropParametersXML = new TeamPropParametersXML(xmlDirectory);
-        try {
-            teamPropParameters = teamPropParametersXML.getTeamPropParameters();
-        } catch (XPathExpressionException e) {
-            throw new RuntimeException(e);
-        }
+        teamPropParameters = teamPropParametersXML.getTeamPropParameters();
 
         // Note: if no COMPETITION or AUTO_TEST OpMode in RobotAction.XML contains
         // the action FIND_TEAM_PROP then collectedSpikeWindowData will be empty.
-        SpikeWindowMappingXML spikeWindowMappingXML;
-        try {
-            spikeWindowMappingXML = new SpikeWindowMappingXML(xmlDirectory);
-        } catch (ParserConfigurationException | SAXException | IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        try {
-            opModeSpikeWindowMapping = spikeWindowMappingXML.collectSpikeWindowMapping(pOpMode);
-        } catch (XPathExpressionException e) {
-            throw new RuntimeException(e);
-        }
+        SpikeWindowMappingXML spikeWindowMappingXML = new SpikeWindowMappingXML(xmlDirectory);;
+        opModeSpikeWindowMapping = spikeWindowMappingXML.collectSpikeWindowMapping(pOpMode);
 
         if (opModeSpikeWindowMapping == null)
             throw new AutonomousRobotException(TAG, "Element 'FIND_TEAM_PROP' not found under OpMode " + pOpMode);
 
-        // Start the front webcam with the webcam frame processor.
+        // Read the parameters for the backdrop from the xml file.
+        BackdropParametersXML backdropParametersXML = new BackdropParametersXML(xmlDirectory);
+        backdropParameters = backdropParametersXML.getBackdropParameters();
+
+        // Start the front webcam with the raw webcam frame processor.
         // We can start a camera by using the <START_CAMERA> action in RobotAction.xml
         // but since the first task in Autonomous is to find the Team Prop, we save
-        // time by starting the front webcam here with a processor for raw frames. The
-        // only time this camera might not be in the configuration is during testing.
+        // time by starting the front webcam here with two processors: one for raw
+        // frames (enabled) and one for AprilTags (disabled) OR a single processor for
+        // raw frames (enabled). The only time this camera might not be in the
+        // configuration is during testing.
         if (robot.configuredWebcams != null) { // if webcam(s) are configured in
             VisionPortalWebcamConfiguration.ConfiguredWebcam frontWebcamConfiguration =
                     robot.configuredWebcams.get(RobotConstantsCenterStage.InternalWebcamId.FRONT_WEBCAM);
             if (frontWebcamConfiguration != null) {
-                VisionProcessor webcamFrameProcessor = new RawFrameProcessor.Builder().build();
-                RawFrameWebcam rawFrameWebcam = new RawFrameWebcam(frontWebcamConfiguration,
-                        Pair.create(RobotConstantsCenterStage.ProcessorIdentifier.RAW_FRAME, webcamFrameProcessor));
-                if (!rawFrameWebcam.waitForWebcamStart(2000))
+                // The front webcam may configured for raw frames only or for both
+                // raw frames and AprilTags.
+                EnumMap<RobotConstantsCenterStage.ProcessorIdentifier, Pair<VisionProcessor, Boolean>> assignedProcessors =
+                        new EnumMap<>(RobotConstantsCenterStage.ProcessorIdentifier.class);
+                VisionProcessor rawFrameProcessor = new RawFrameProcessor.Builder().build();
+                assignedProcessors.put(RobotConstantsCenterStage.ProcessorIdentifier.RAW_FRAME, Pair.create(rawFrameProcessor, true));
+
+                if (frontWebcamConfiguration.processorIdentifiers.contains(RobotConstantsCenterStage.ProcessorIdentifier.APRIL_TAG)) {
+                    VisionProcessor aprilTagProcessor = new AprilTagProcessor.Builder()
+                            // Follow the MultiPortal sample, which only includes setLensIntrinsics
+                            .setLensIntrinsics(frontWebcamConfiguration.cameraCalibration.focalLengthX,
+                                    frontWebcamConfiguration.cameraCalibration.focalLengthY,
+                                    frontWebcamConfiguration.cameraCalibration.principalPointX,
+                                    frontWebcamConfiguration.cameraCalibration.principalPointY)
+                            .build();
+
+                    assignedProcessors.put(RobotConstantsCenterStage.ProcessorIdentifier.APRIL_TAG, Pair.create(aprilTagProcessor, false));
+                }
+
+                VisionPortalWebcam visionPortalWebcam = new VisionPortalWebcam(frontWebcamConfiguration, assignedProcessors);
+                frontWebcamConfiguration.setVisionPortalWebcam(visionPortalWebcam);
+                if (!visionPortalWebcam.waitForWebcamStart(2000))
                     throw new AutonomousRobotException(TAG, "Unable to start front webcam");
-                frontWebcamConfiguration.setVisionPortalWebcam(rawFrameWebcam);
-                openWebcam = RobotConstantsCenterStage.InternalWebcamId.FRONT_WEBCAM;
+
+                openWebcams.add(RobotConstantsCenterStage.InternalWebcamId.FRONT_WEBCAM);
             }
         }
     }
@@ -132,10 +162,18 @@ public class TeamPropAuto {
         String webcamIdString = opModeSpikeWindowMapping.imageParameters.image_source.toUpperCase();
         RobotConstantsCenterStage.InternalWebcamId webcamId =
                 RobotConstantsCenterStage.InternalWebcamId.valueOf(webcamIdString);
-        if (openWebcam != webcamId)
+        VisionPortalWebcamConfiguration.ConfiguredWebcam webcam =
+                Objects.requireNonNull(robot.configuredWebcams.get(webcamId), TAG + " Webcam " + webcamId + " is not in the current configuration");
+
+        if (!openWebcams.contains(webcamId))
             throw new AutonomousRobotException(TAG, "Attempt to find the team prop using webcam " + webcamId + " but it is not open");
 
-        RawFrameWebcam rawFrameWebcam = (RawFrameWebcam) Objects.requireNonNull(robot.configuredWebcams.get(webcamId)).getVisionPortalWebcam();
+        Pair<RobotConstantsCenterStage.ProcessorIdentifier, VisionProcessor> rawFrameProcessor =
+                webcam.getVisionPortalWebcam().getActiveProcessor();
+        if (rawFrameProcessor.first != RobotConstantsCenterStage.ProcessorIdentifier.RAW_FRAME)
+            throw new AutonomousRobotException(TAG, "The active processor is not RAW_FRAME");
+
+        RawFrameAccess rawFrameAccess = new RawFrameAccess((RawFrameProcessor) rawFrameProcessor.second);
 
         // Get the recognition path from the XML file.
         RobotConstantsCenterStage.TeamPropRecognitionPath teamPropRecognitionPath =
@@ -144,7 +182,7 @@ public class TeamPropAuto {
 
         // Perform image recognition.
         TeamPropRecognition teamPropRecognition = new TeamPropRecognition(alliance);
-        TeamPropReturn teamPropReturn = teamPropRecognition.recognizeTeamProp(rawFrameWebcam, teamPropRecognitionPath, teamPropParameters, opModeSpikeWindowMapping);
+        TeamPropReturn teamPropReturn = teamPropRecognition.recognizeTeamProp(rawFrameAccess, teamPropRecognitionPath, teamPropParameters, opModeSpikeWindowMapping);
         RobotConstantsCenterStage.TeamPropLocation finalTeamPropLocation;
         if (teamPropReturn.recognitionResults == RobotConstants.RecognitionResults.RECOGNITION_INTERNAL_ERROR ||
                 teamPropReturn.recognitionResults == RobotConstants.RecognitionResults.RECOGNITION_UNSUCCESSFUL) {

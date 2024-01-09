@@ -169,7 +169,9 @@ public class TeamPropRecognition {
         }
 
         // Draw a black circle at the center of the largest circle.
-        Imgproc.circle(propOut, Objects.requireNonNull(centerOfLargestCircle), 10, new Scalar(0, 0, 0), 4);
+        Imgproc.circle(propOut, Objects.requireNonNull(centerOfLargestCircle,
+                TAG + " colorChannelCirclesPath: centerOfLargestCircle is null"),
+                10, new Scalar(0, 0, 0), 4);
 
         String teamPropFilename = pOutputFilenamePreamble + "_CIR.png";
         RobotLog.dd(TAG, "Writing " + teamPropFilename);
@@ -421,7 +423,7 @@ public class TeamPropRecognition {
     // determines which channel to pre-process and return. For better
     // contrast the RED alliance uses the inversion of the blue channel
     // and the BLUE alliance uses the inversion of the red channel.
-    private Mat splitAndInvertChannels(Mat pImageROI, RobotConstants.Alliance pAlliance, VisionParameters.GrayParameters pGrayParameters, String pOutputFilenamePreamble) {
+    public static Mat splitAndInvertChannels(Mat pImageROI, RobotConstants.Alliance pAlliance, VisionParameters.GrayParameters pGrayParameters, String pOutputFilenamePreamble) {
         ArrayList<Mat> channels = new ArrayList<>(3);
         Core.split(pImageROI, channels); // red or blue channel. B = 0, G = 1, R = 2
         Mat selectedChannel;
@@ -431,8 +433,10 @@ public class TeamPropRecognition {
                 // than the red channel.
                 selectedChannel = channels.get(0);
                 Core.bitwise_not(selectedChannel, selectedChannel);
-                Imgcodecs.imwrite(pOutputFilenamePreamble + "_BLUE_INVERTED.png", selectedChannel);
-                RobotLog.dd(TAG, "Writing " + pOutputFilenamePreamble + "_BLUE_INVERTED.png");
+                if (pOutputFilenamePreamble != null) {
+                    Imgcodecs.imwrite(pOutputFilenamePreamble + "_BLUE_INVERTED.png", selectedChannel);
+                    RobotLog.dd(TAG, "Writing " + pOutputFilenamePreamble + "_BLUE_INVERTED.png");
+                }
                 break;
             }
             case BLUE: {
@@ -440,8 +444,10 @@ public class TeamPropRecognition {
                 // than the blue channel.
                 selectedChannel = channels.get(2);
                 Core.bitwise_not(selectedChannel, selectedChannel);
-                Imgcodecs.imwrite(pOutputFilenamePreamble + "_RED_INVERTED.png", selectedChannel);
-                RobotLog.dd(TAG, "Writing " + pOutputFilenamePreamble + "_RED_INVERTED.png");
+                if (pOutputFilenamePreamble != null) {
+                    Imgcodecs.imwrite(pOutputFilenamePreamble + "_RED_INVERTED.png", selectedChannel);
+                    RobotLog.dd(TAG, "Writing " + pOutputFilenamePreamble + "_RED_INVERTED.png");
+                }
                 break;
             }
             default: throw new AutonomousRobotException(TAG, "Alliance must be RED or BLUE");

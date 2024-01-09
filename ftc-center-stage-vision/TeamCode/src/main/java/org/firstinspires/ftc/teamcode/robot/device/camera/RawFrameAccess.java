@@ -3,10 +3,10 @@ package org.firstinspires.ftc.teamcode.robot.device.camera;
 import static android.os.SystemClock.sleep;
 
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.ftcdevcommon.AutonomousRobotException;
 import org.firstinspires.ftc.ftcdevcommon.Pair;
+import org.firstinspires.ftc.ftcdevcommon.platform.android.RobotLogCommon;
 import org.firstinspires.ftc.teamcode.common.RobotConstantsCenterStage;
 import org.firstinspires.ftc.vision.VisionProcessor;
 import org.opencv.core.Mat;
@@ -14,29 +14,27 @@ import org.opencv.core.Mat;
 import java.util.Date;
 import java.util.Objects;
 
-public class RawFrameWebcam extends VisionPortalWebcam implements ImageProvider {
-    private static final String TAG = RawFrameWebcam.class.getSimpleName();
+// Use the ImageProvider interface to provide cross-project compatibility
+// with IntelliJ feeder projects that get images from files.
+public class RawFrameAccess implements ImageProvider {
+    private static final String TAG = RawFrameAccess.class.getSimpleName();
 
-    public RawFrameWebcam(VisionPortalWebcamConfiguration.ConfiguredWebcam pConfiguredWebcam,
-                          Pair<RobotConstantsCenterStage.ProcessorIdentifier, VisionProcessor> pAssignedProcessor) {
-        super(pConfiguredWebcam, pAssignedProcessor);
+    private final RawFrameProcessor rawFrameProcessor;
+
+    public RawFrameAccess(RawFrameProcessor pRawFrameProcessor) {
+        rawFrameProcessor = pRawFrameProcessor;
     }
 
     public Pair<Mat, Date> getImage() {
-        if (activeProcessorId != RobotConstantsCenterStage.ProcessorIdentifier.RAW_FRAME)
-            throw new AutonomousRobotException(TAG, "WEBCAM_FRAME is not the active processor");
-
-        RawFrameProcessor rawFrameProcessor = (RawFrameProcessor) activeProcessor;
-
         Pair<Mat, Date> frameVal = null;
         ElapsedTime dataAcquiredTimer = new ElapsedTime();
         dataAcquiredTimer.reset(); // start
         while (dataAcquiredTimer.milliseconds() < 1000) {
-            frameVal = Objects.requireNonNull(rawFrameProcessor).getWebcamFrame();
+            frameVal = Objects.requireNonNull(rawFrameProcessor, TAG + " getImage(): rawFrameProcessor unexpectedly null").getWebcamFrame();
             if (frameVal != null)
                 break;
             else {
-                RobotLog.vv(TAG, "No available webcam frame");
+                RobotLogCommon.v(TAG, "No available webcam frame");
                 sleep(50);
             }
         }

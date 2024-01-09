@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.util.RobotLog;
 import org.firstinspires.ftc.ftcdevcommon.AutonomousRobotException;
 import org.firstinspires.ftc.ftcdevcommon.xml.XMLUtils;
 import org.firstinspires.ftc.teamcode.auto.vision.*;
+import org.firstinspires.ftc.teamcode.common.RobotConstants;
 import org.firstinspires.ftc.teamcode.common.xml.ImageXML;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -24,10 +25,20 @@ public class TeamPropParametersXML {
     private static final String TEAM_PROP_FILE_NAME = "TeamPropParameters.xml";
 
     private final Document document;
-    private final XPath xpath;
+    private final String xmlDirectory;
+    private final String xmlFilePath;
+    private final Node red_pixel_count_gray_median_node;
+    private final Node red_pixel_count_gray_threshold_node;
+    private final Node blue_pixel_count_gray_median_node;
+    private final Node blue_pixel_count_gray_threshold_node;
+    private final TeamPropParameters teamPropParameters;
 
     public TeamPropParametersXML(String pXMLDir) {
+        Node team_prop_parameters_node;
         try {
+            xmlDirectory = pXMLDir;
+            xmlFilePath = pXMLDir + TEAM_PROP_FILE_NAME;
+
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             dbFactory.setIgnoringComments(true);
 
@@ -36,9 +47,17 @@ public class TeamPropParametersXML {
             // Not supported in Android Studio dbFactory.setXIncludeAware(true);
 
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-            document = dBuilder.parse(new File(pXMLDir + TEAM_PROP_FILE_NAME));
+            document = dBuilder.parse(new File(xmlFilePath));
             XPathFactory xpathFactory = XPathFactory.newInstance();
-            xpath = xpathFactory.newXPath();
+            XPath xpath = xpathFactory.newXPath();
+
+            // Point to the first node.
+            RobotLog.ii(TAG, "Parsing XML team_prop_parameters");
+
+            XPathExpression expr = xpath.compile("//team_prop_parameters");
+            team_prop_parameters_node = (Node) expr.evaluate(document, XPathConstants.NODE);
+            if (team_prop_parameters_node == null)
+                throw new AutonomousRobotException(TAG, "Element '//team_prop_parameters' not found");
 
         } catch (ParserConfigurationException pex) {
             throw new AutonomousRobotException(TAG, "DOM parser Exception " + pex.getMessage());
@@ -46,19 +65,9 @@ public class TeamPropParametersXML {
             throw new AutonomousRobotException(TAG, "SAX Exception " + sx.getMessage());
         } catch (IOException iex) {
             throw new AutonomousRobotException(TAG, "IOException " + iex.getMessage());
+        } catch (XPathExpressionException xex) {
+            throw new AutonomousRobotException(TAG, "XPath Exception " + xex.getMessage());
         }
-    }
-
-    public TeamPropParameters getTeamPropParameters() throws XPathExpressionException {
-        XPathExpression expr;
-
-        // Point to the first node.
-        RobotLog.ii(TAG, "Parsing XML team_prop_parameters");
-
-        expr = xpath.compile("//team_prop_parameters");
-        Node team_prop_parameters_node = (Node) expr.evaluate(document, XPathConstants.NODE);
-        if (team_prop_parameters_node == null)
-            throw new AutonomousRobotException(TAG, "Element '//team_prop_parameters' not found");
 
         // Point to <color_channel_circles>
         Node circles_node = team_prop_parameters_node.getFirstChild();
@@ -212,6 +221,13 @@ public class TeamPropParametersXML {
 
         VisionParameters.GrayParameters redPixelCountGrayParameters = ImageXML.parseGrayParameters(red_pixel_count_gray_node);
 
+        // Get access to the <median_target> and <threshold_low> elements under <gray_parameters>
+        // for possible modification.
+        Node local_red_pixel_count_gray_median_node = red_pixel_count_gray_node.getFirstChild();
+        red_pixel_count_gray_median_node = XMLUtils.getNextElement(local_red_pixel_count_gray_median_node);
+        Node local_red_pixel_count_gray_threshold_node = red_pixel_count_gray_median_node.getNextSibling();
+        red_pixel_count_gray_threshold_node = XMLUtils.getNextElement(local_red_pixel_count_gray_threshold_node);
+
         // Point to the criteria for the red pixel count.
         Node red_pixel_count_criteria_node = red_pixel_count_gray_node.getNextSibling();
         red_pixel_count_criteria_node = XMLUtils.getNextElement(red_pixel_count_criteria_node);
@@ -246,6 +262,13 @@ public class TeamPropParametersXML {
             throw new AutonomousRobotException(TAG, "Element 'color_channel_pixel_count/BLUE/gray_parameters' not found");
 
         VisionParameters.GrayParameters bluePixelCountGrayParameters = ImageXML.parseGrayParameters(blue_pixel_count_gray_node);
+
+        // Get access to the <median_target> and <threshold_low> elements under <gray_parameters>
+        // for possible modification.
+        Node local_blue_pixel_count_gray_median_node = blue_pixel_count_gray_node.getFirstChild();
+        blue_pixel_count_gray_median_node = XMLUtils.getNextElement(local_blue_pixel_count_gray_median_node);
+        Node local_blue_pixel_count_gray_threshold_node = blue_pixel_count_gray_median_node.getNextSibling();
+        blue_pixel_count_gray_threshold_node = XMLUtils.getNextElement(local_blue_pixel_count_gray_threshold_node);
 
         // Point to the criteria for the blue pixel count.
         Node blue_pixel_count_criteria_node = blue_pixel_count_gray_node.getNextSibling();
@@ -338,7 +361,41 @@ public class TeamPropParametersXML {
                 new TeamPropParameters.BrightSpotParameters(redBrightSpotGrayParameters, redBlurKernel,
                         blueBrightSpotGrayParameters, blueBlurKernel);
 
-        return new TeamPropParameters(colorChannelCirclesParameters, colorChannelPixelCountParameters, brightSpotParameters);
+        teamPropParameters = new TeamPropParameters(colorChannelCirclesParameters, colorChannelPixelCountParameters, brightSpotParameters);
+    }
+
+    // Warning: this method returns the team prop parameters from the XML
+    // XML file. Any changes made to the parameters by any "set" methods
+    // below are not reflected in the startParameters variable. If you do
+    // want to reflect the changes you will have to recreate colorChannelPixelCountParameters and include:
+    //  teamPropParameters =  new TeamPropParameters(colorChannelCirclesParameters, colorChannelPixelCountParameters, brightSpotParameters);
+    // after every change.
+    public TeamPropParameters getTeamPropParameters() {
+        return teamPropParameters;
+    }
+
+    // Replaces the text values of the children of the <gray_arameters> element
+    // under RED or BLUE <color_channel_pixel_count>.
+    public void setPixelCountGrayParameters(RobotConstants.Alliance pAlliance,
+                                            VisionParameters.GrayParameters pGrayParameters) {
+        RobotLog.ii(TAG, "Setting the grayscale parameters for alliance " + pAlliance + " for the color pixel countT recognition path in teamPropParameters");
+        if (pAlliance == RobotConstants.Alliance.RED) {
+            RobotLog.ii(TAG, "Setting the grayscale median target to " + pGrayParameters.median_target);
+            red_pixel_count_gray_median_node.setTextContent(Integer.toString(pGrayParameters.median_target));
+
+            RobotLog.ii(TAG, "Setting the grayscale threshold to " + pGrayParameters.threshold_low);
+            red_pixel_count_gray_threshold_node.setTextContent(Integer.toString(pGrayParameters.threshold_low));
+        } else {
+            RobotLog.ii(TAG, "Setting the grayscale median target to " + pGrayParameters.median_target);
+            blue_pixel_count_gray_median_node.setTextContent(Integer.toString(pGrayParameters.median_target));
+
+            RobotLog.ii(TAG, "Setting the grayscale threshold to " + pGrayParameters.threshold_low);
+            blue_pixel_count_gray_threshold_node.setTextContent(Integer.toString(pGrayParameters.threshold_low));
+        }
+    }
+
+    public void writeTeamPropParametersFile() {
+        XMLUtils.writeXMLFile(document, xmlFilePath, xmlDirectory + RobotConstants.XSLT_FILE_NAME);
     }
 
 }

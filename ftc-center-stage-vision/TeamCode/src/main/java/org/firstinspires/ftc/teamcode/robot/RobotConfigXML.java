@@ -31,8 +31,7 @@ import javax.xml.xpath.XPathExpressionException;
 
 public class RobotConfigXML {
 
-    public static final String TAG = "RobotConfigXML";
-    private static final String FILE_NAME = "RobotConfig Vision.xml";
+    public static final String TAG = RobotConfigXML.class.getSimpleName();
 
     // IntelliJ only
     /*
@@ -47,7 +46,7 @@ public class RobotConfigXML {
     private final EnumMap<RobotConstantsCenterStage.InternalWebcamId, VisionPortalWebcamConfiguration.ConfiguredWebcam> configuredWebcams
             = new EnumMap<>(RobotConstantsCenterStage.InternalWebcamId.class);
 
-    public RobotConfigXML(String pWorkingDirectory) throws ParserConfigurationException, SAXException, IOException, XPathExpressionException {
+    public RobotConfigXML(String pRobotConfigFilename) throws ParserConfigurationException, SAXException, IOException, XPathExpressionException {
 
         // IntelliJ only
         /*
@@ -70,8 +69,7 @@ public class RobotConfigXML {
         // End Android only
 
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-        String configFilename = pWorkingDirectory + FILE_NAME;
-        Document document = dBuilder.parse(new File(configFilename));
+        Document document = dBuilder.parse(new File(pRobotConfigFilename));
 
         // Collect all of the elements from the XML file.
         Element robotConfigRoot = document.getDocumentElement();
@@ -124,7 +122,7 @@ public class RobotConfigXML {
 
     // Parse a VISION_PORTAL_WEBCAM element into its own structure.
     private void parseWebcamConfiguration(Node pWebcamNode) {
-      NamedNodeMap configuration_attributes = pWebcamNode.getAttributes();
+        NamedNodeMap configuration_attributes = pWebcamNode.getAttributes();
         Node configured_node = configuration_attributes.getNamedItem("configured");
         if (configured_node == null || configured_node.getTextContent().isEmpty())
             throw new AutonomousRobotException(TAG, "Attribute 'configured' is missing or empty");
@@ -150,7 +148,7 @@ public class RobotConfigXML {
         XMLUtils.processElements(webcam_set_elements, (each_webcam) -> {
             VisionPortalWebcamConfiguration.ConfiguredWebcam webcamData = parseWebcamData(each_webcam);
 
-            RobotLog.dd(TAG, "Configuring webcam with serial number " + webcamData.serialNumber);
+            RobotLogCommon.d(TAG, "Configuring webcam with serial number " + webcamData.serialNumber);
 
             // Make sure there are no duplicate webcam ids or serial numbers.
             Optional<RobotConstantsCenterStage.InternalWebcamId> duplicate = configuredWebcams.entrySet().stream()
@@ -176,7 +174,7 @@ public class RobotConfigXML {
 
         RobotConstantsCenterStage.InternalWebcamId webcamId =
                 RobotConstantsCenterStage.InternalWebcamId.valueOf(id_node.getTextContent().toUpperCase());
-        RobotLog.ii(TAG, "Webcam with internal id " + webcamId + " is in the configuration");
+        RobotLogCommon.c(TAG, "Webcam with internal id " + webcamId + " is in the configuration");
 
         // <serial_number>
         Node serial_number_node = id_node.getNextSibling();
@@ -217,8 +215,38 @@ public class RobotConfigXML {
             throw new AutonomousRobotException(TAG, "Invalid number format in element 'resolution_height'");
         }
 
+        // <distance_camera_lens_to_robot_center>
+        Node distance_center_node = resolution_height_node.getNextSibling();
+        distance_center_node = XMLUtils.getNextElement(distance_center_node);
+        if (distance_center_node == null || !distance_center_node.getNodeName().equals("distance_camera_lens_to_robot_center") ||
+                distance_center_node.getTextContent().isEmpty())
+            throw new AutonomousRobotException(TAG, "Element 'distance_camera_lens_to_robot_center' not found");
+
+        String distanceCenterText = distance_center_node.getTextContent();
+        double distance_camera_lens_to_robot_center;
+        try {
+            distance_camera_lens_to_robot_center = Double.parseDouble(distanceCenterText);
+        } catch (NumberFormatException nex) {
+            throw new AutonomousRobotException(TAG, "Invalid number format in element 'distance_camera_lens_to_robot_center'");
+        }
+
+        // <offset_camera_lens_from_robot_center>
+        Node offset_center_node = distance_center_node.getNextSibling();
+        offset_center_node = XMLUtils.getNextElement(offset_center_node);
+        if (offset_center_node == null || !offset_center_node.getNodeName().equals("offset_camera_lens_from_robot_center") ||
+                offset_center_node.getTextContent().isEmpty())
+            throw new AutonomousRobotException(TAG, "Element 'offset_camera_lens_from_robot_center' not found or empty");
+
+        String offsetCenterText = offset_center_node.getTextContent();
+        double offset_camera_lens_from_robot_center;
+        try {
+            offset_camera_lens_from_robot_center = Double.parseDouble(offsetCenterText);
+        } catch (NumberFormatException nex) {
+            throw new AutonomousRobotException(TAG, "Invalid number format in element 'offset_camera_lens_from_robot_center'");
+        }
+
         // Parse the <processor_set> element.
-        Node processor_set_node = resolution_height_node.getNextSibling();
+        Node processor_set_node = offset_center_node.getNextSibling();
         processor_set_node = XMLUtils.getNextElement(processor_set_node);
         if (processor_set_node == null || !processor_set_node.getNodeName().equals("processor_set") ||
                 processor_set_node.getTextContent().isEmpty())
@@ -314,8 +342,9 @@ public class RobotConfigXML {
         }
 
         return new VisionPortalWebcamConfiguration.ConfiguredWebcam(webcamId,
-                serial_number, resolution_width, resolution_height, processorIds,
-                calibration);
+                serial_number, resolution_width, resolution_height,
+                distance_camera_lens_to_robot_center, offset_camera_lens_from_robot_center,
+                processorIds, calibration);
     }
 
 }

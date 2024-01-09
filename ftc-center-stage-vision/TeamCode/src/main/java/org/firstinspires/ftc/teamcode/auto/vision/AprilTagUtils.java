@@ -2,13 +2,17 @@ package org.firstinspires.ftc.teamcode.auto.vision;
 
 import org.firstinspires.ftc.ftcdevcommon.AutonomousRobotException;
 import org.firstinspires.ftc.ftcdevcommon.Pair;
+import org.firstinspires.ftc.teamcode.common.AngleDistance;
 import org.firstinspires.ftc.teamcode.common.RobotConstantsCenterStage;
 
 import java.util.EnumSet;
 
 public class AprilTagUtils {
 
-    private static String TAG = AprilTagUtils.class.getSimpleName();
+    private static final String TAG = AprilTagUtils.class.getSimpleName();
+
+    private static final double STRAFE_LEFT = 90.0;
+    private static final double STRAFE_RIGHT = -90.0;
 
     // For validation of the AprilTags on the BLUE side backdrop.
     private static final EnumSet<RobotConstantsCenterStage.AprilTagId> blueBackdropAprilTags =
@@ -28,11 +32,11 @@ public class AprilTagUtils {
     // target AprilTag from the position of its neighbor and returns the
     // distance and angle to the target AprilTag.
 
-    public static Pair<Double, Double> inferAprilTag(RobotConstantsCenterStage.AprilTagId pTargetId,
+    public static AngleDistance inferAprilTag(RobotConstantsCenterStage.AprilTagId pTargetId,
                                                      RobotConstantsCenterStage.AprilTagId pRecognizedId,
                                                      double pDistanceToRecognizedId, double pAngleToRecognizedId) {
         if (pTargetId == pRecognizedId) // the caller shouldn't do this
-            return Pair.create(pDistanceToRecognizedId, pAngleToRecognizedId); // so return the input
+            return new AngleDistance(pAngleToRecognizedId, pDistanceToRecognizedId); // so return the input
 
         // Validate that the target id and the recognized id belong to the
         // backdrop of the same alliance.
@@ -48,7 +52,7 @@ public class AprilTagUtils {
     // and second is the inferred angle to the target AprilTag.
     // Credit to Notre Dame students Brandon Lim for the calculations and Sotiris
     // Artenos for the IntelliJ test harness.
-    private static Pair<Double, Double> calculator(int targetAprilTag, int givenAprilTag, double distanceGivenApril, double angleGivenApril) {
+    private static AngleDistance calculator(int targetAprilTag, int givenAprilTag, double distanceGivenApril, double angleGivenApril) {
 
         int sign = targetAprilTag < givenAprilTag ? -1 : 1;
         int endsign = targetAprilTag > givenAprilTag ? -1 : 1;
@@ -64,7 +68,70 @@ public class AprilTagUtils {
         newAngleApril = endsign * Math.toDegrees(newAngleApril);
         double distanceFive = Math.sqrt(d * d + f * f);
 
-        return Pair.create(distanceFive, newAngleApril);
+        return new AngleDistance(newAngleApril, distanceFive);
+    }
+
+    public static AngleDistance strafeAdjustment(int aprilTag, double distanceFromCenter, double adjustment) {
+        // for center april tags
+        // no change is needed for center april tags
+        if (aprilTag == 2 || aprilTag == 5) {
+            if (distanceFromCenter >= 0) {
+                return new AngleDistance(STRAFE_RIGHT, distanceFromCenter);
+            } else {
+                return new AngleDistance(STRAFE_LEFT, Math.abs(distanceFromCenter));
+            }
+        }
+
+        // for left april tags
+        else if (aprilTag == 1 || aprilTag == 4) {
+
+            // left of april tag
+            if (distanceFromCenter >= 0) {
+                // not far enough to the left from april tag
+                // if robot is not far enough to the left the robot has to move a small amount more left
+                if (distanceFromCenter - adjustment < 0) {
+                    return new AngleDistance(STRAFE_LEFT, Math.abs(distanceFromCenter - adjustment));
+                }
+
+                // too far to the left of april tag
+                // if robot too far from april tag robot has to move right to be adjustment inches from april tag
+                else {
+                    return new AngleDistance(STRAFE_RIGHT, Math.abs(distanceFromCenter - adjustment));
+                }
+            }
+
+            // right of april tag
+            // has to move more left to reach adjustment inches from april tag
+            else {
+                return new AngleDistance(STRAFE_LEFT, Math.abs(Math.abs(distanceFromCenter) + adjustment));
+            }
+        }
+
+        // for right april tags
+        else {
+
+            // left of april tag
+            // has to move more right to reach adjustment inches from april tag
+            if (distanceFromCenter >= 0) {
+                return new AngleDistance(STRAFE_RIGHT, Math.abs(Math.abs(distanceFromCenter) + adjustment));
+            }
+
+            // right of april tag
+            else {
+
+                // too far to the left of april tag
+                // if robot too far from april tag robot has to move right to be adjustment inches from april tag
+                if (distanceFromCenter + adjustment < 0) {
+                    return new AngleDistance(STRAFE_LEFT, Math.abs(distanceFromCenter + adjustment));
+                }
+
+                // not far enough to the left from april tag
+                // if robot is not far enough to the right the robot has to move a small amount more right
+                else {
+                    return new AngleDistance(STRAFE_RIGHT, Math.abs(distanceFromCenter + adjustment));
+                }
+            }
+        }
     }
 
 }
