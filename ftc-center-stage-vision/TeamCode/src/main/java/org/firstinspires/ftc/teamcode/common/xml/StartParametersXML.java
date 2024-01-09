@@ -20,6 +20,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.util.EnumMap;
+import java.util.Objects;
 
 public class StartParametersXML {
 
@@ -38,7 +39,7 @@ public class StartParametersXML {
     private final EnumMap<RobotConstantsCenterStage.OpMode, Node> autoEndingPositionNodes
             = new EnumMap<>(RobotConstantsCenterStage.OpMode.class);
 
-    private StartParameters startParameters;
+    private final StartParameters startParameters;
 
     // IntelliJ only
     /*
@@ -157,7 +158,7 @@ public class StartParametersXML {
 
         autoEndingPositions.put(pAutoOpMode, endingPosition);
         Node endingPositionNode = autoEndingPositionNodes.get(pAutoOpMode);
-        endingPositionNode.setTextContent(pEndingPositionText);
+        Objects.requireNonNull(endingPositionNode, TAG + " No ending position for OpMode " + pAutoOpMode).setTextContent(pEndingPositionText);
     }
 
     public void writeStartParametersFile() {

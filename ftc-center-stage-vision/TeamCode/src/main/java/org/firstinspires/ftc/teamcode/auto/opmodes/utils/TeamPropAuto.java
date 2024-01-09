@@ -36,15 +36,15 @@ import org.firstinspires.ftc.ftcdevcommon.AutonomousRobotException;
 import org.firstinspires.ftc.ftcdevcommon.Pair;
 import org.firstinspires.ftc.ftcdevcommon.platform.android.WorkingDirectory;
 import org.firstinspires.ftc.teamcode.auto.vision.BackdropParameters;
-import org.firstinspires.ftc.teamcode.auto.xml.BackdropParametersXML;
-import org.firstinspires.ftc.teamcode.common.SpikeWindowMapping;
 import org.firstinspires.ftc.teamcode.auto.vision.TeamPropParameters;
 import org.firstinspires.ftc.teamcode.auto.vision.TeamPropRecognition;
 import org.firstinspires.ftc.teamcode.auto.vision.TeamPropReturn;
-import org.firstinspires.ftc.teamcode.common.xml.SpikeWindowMappingXML;
+import org.firstinspires.ftc.teamcode.auto.xml.BackdropParametersXML;
 import org.firstinspires.ftc.teamcode.auto.xml.TeamPropParametersXML;
 import org.firstinspires.ftc.teamcode.common.RobotConstants;
 import org.firstinspires.ftc.teamcode.common.RobotConstantsCenterStage;
+import org.firstinspires.ftc.teamcode.common.SpikeWindowMapping;
+import org.firstinspires.ftc.teamcode.common.xml.SpikeWindowMappingXML;
 import org.firstinspires.ftc.teamcode.robot.FTCRobotConfigVision;
 import org.firstinspires.ftc.teamcode.robot.device.camera.RawFrameAccess;
 import org.firstinspires.ftc.teamcode.robot.device.camera.RawFrameProcessor;
@@ -61,7 +61,6 @@ import java.util.Objects;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathException;
-import javax.xml.xpath.XPathExpressionException;
 
 public class TeamPropAuto {
     private static final String TAG = TeamPropAuto.class.getSimpleName();
@@ -105,7 +104,7 @@ public class TeamPropAuto {
 
         // Note: if no COMPETITION or AUTO_TEST OpMode in RobotAction.XML contains
         // the action FIND_TEAM_PROP then collectedSpikeWindowData will be empty.
-        SpikeWindowMappingXML spikeWindowMappingXML = new SpikeWindowMappingXML(xmlDirectory);;
+        SpikeWindowMappingXML spikeWindowMappingXML = new SpikeWindowMappingXML(xmlDirectory);
         opModeSpikeWindowMapping = spikeWindowMappingXML.collectSpikeWindowMapping(pOpMode);
 
         if (opModeSpikeWindowMapping == null)

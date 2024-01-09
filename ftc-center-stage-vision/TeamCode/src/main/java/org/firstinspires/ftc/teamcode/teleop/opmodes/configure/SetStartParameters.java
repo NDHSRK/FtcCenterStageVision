@@ -24,10 +24,8 @@ public class SetStartParameters extends LinearOpMode {
     private static final String TAG = SetStartParameters.class.getSimpleName();
 
     private StartParametersXML startParametersXML;
-    private StartParameters startParameters;
 
     private static final int MAX_START_DELAY = 10;
-    private int startDelay;
     private int currentStartDelay;
     private FTCButton increaseDelay;
     private FTCButton decreaseDelay;
@@ -64,7 +62,8 @@ public class SetStartParameters extends LinearOpMode {
             throw new RuntimeException(e);
         }
 
-        startParameters = startParametersXML.getStartParameters();
+        StartParameters startParameters = startParametersXML.getStartParameters();
+        int startDelay;
         currentStartDelay = startDelay = startParameters.autoStartDelay;
 
         telemetry.addLine("The current start delay is " + currentStartDelay);

@@ -11,7 +11,6 @@ import org.firstinspires.ftc.teamcode.common.RobotConstantsCenterStage;
 import org.firstinspires.ftc.teamcode.common.SpikeWindowMapping;
 import org.firstinspires.ftc.teamcode.common.xml.SpikeWindowMappingXML;
 import org.firstinspires.ftc.teamcode.robot.FTCRobotConfigVision;
-import org.firstinspires.ftc.teamcode.robot.FTCRobotConfigVision;
 import org.firstinspires.ftc.teamcode.robot.device.camera.CameraStreamProcessor;
 import org.firstinspires.ftc.teamcode.robot.device.camera.SpikeWindowRendering;
 import org.firstinspires.ftc.teamcode.robot.device.camera.VisionPortalWebcam;
@@ -43,7 +42,7 @@ public class SpikeWindowViewer extends LinearOpMode {
 
     // In this OpMode all of the action takes place during init().
     @Override
-    public void runOpMode() throws InterruptedException {
+    public void runOpMode() {
         RobotLog.ii(TAG, "Initializing the SpikeWindowViewer");
 
         // Get the camera configuration from RobotConfig.xml.
