@@ -29,56 +29,23 @@
     </criteria>
   </color_channel_circles>
 
-  <!-- Not used in Android Studio -->
-  <color_channel_features>
-    <!-- Need gray parameters for the median; threshold is not used. -->
-    <gray_parameters>
-      <median_target>150</median_target>
-      <threshold_low>0</threshold_low>
-    </gray_parameters>
-    <criteria>
-      <max_corners>20</max_corners>
-      <quality_level>0.05</quality_level>
-    </criteria>
-  </color_channel_features>
-
-  <!-- Not used in Android Studio -->
-  <!-- Not expanded to support separate parameters for RED and BLUE alliances. -->
-  <!-- For use with OpenCV findContours -->
-  <color_channel_contours>
-    <gray_parameters>
-      <median_target>150</median_target>
-      <threshold_low>220</threshold_low>
-    </gray_parameters>
-
-    <!-- Note: if you include FloodFill then you'll need
-     some additional parameters.
-    <floodfill_function_call_parameters>
-    </floodfill_function_call_parameters -->
-
-    <criteria>
-      <min_area>3000.0</min_area>
-      <max_area>7000.0</max_area>
-    </criteria>
-  </color_channel_contours>
-
   <color_channel_pixel_count>
     <RED>
-      <gray_parameters>
-        <median_target>150</median_target>
-        <threshold_low>200</threshold_low>
-      </gray_parameters>
-      <criteria>
-        <min_white_pixel_count>2000</min_white_pixel_count>
-      </criteria>
-    </RED>
-    <BLUE>
       <gray_parameters>
         <median_target>150</median_target>
         <threshold_low>175</threshold_low>
       </gray_parameters>
       <criteria>
-        <min_white_pixel_count>1000</min_white_pixel_count>
+        <min_white_pixel_count>3000</min_white_pixel_count>
+      </criteria>
+    </RED>
+    <BLUE>
+      <gray_parameters>
+        <median_target>150</median_target>
+        <threshold_low>200</threshold_low>
+      </gray_parameters>
+      <criteria>
+        <min_white_pixel_count>3000</min_white_pixel_count>
       </criteria>
     </BLUE>
   </color_channel_pixel_count>
@@ -88,7 +55,7 @@
     <RED>
       <gray_parameters>
         <median_target>150</median_target>
-        <threshold_low>220</threshold_low>
+        <threshold_low>175</threshold_low>
       </gray_parameters>
       <blur_kernel>31.0</blur_kernel>
     </RED>

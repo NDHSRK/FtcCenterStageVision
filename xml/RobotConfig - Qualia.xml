@@ -1,0 +1,22 @@
+<RobotConfig>
+
+  <VISION_PORTAL_WEBCAM configured="yes">
+    <webcam_set>
+      <webcam>
+        <internal_id>front_webcam</internal_id>
+        <!-- Qualia Logitech C270  -->
+        <serial_number>FE8E42E0</serial_number>
+        <resolution_width>640</resolution_width>
+        <resolution_height>480</resolution_height>
+        <distance_camera_lens_to_robot_center>4.0</distance_camera_lens_to_robot_center>
+        <offset_camera_lens_from_robot_center>0.0</offset_camera_lens_from_robot_center>
+        <processor_set>
+          <processor>raw_frame</processor>
+          <processor>spike_window</processor>
+          <processor>pixel_count</processor>
+        </processor_set>
+      </webcam>
+    </webcam_set>
+  </VISION_PORTAL_WEBCAM>
+
+</RobotConfig>
