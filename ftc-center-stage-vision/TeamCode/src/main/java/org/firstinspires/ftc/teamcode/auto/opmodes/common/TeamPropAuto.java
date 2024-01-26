@@ -170,12 +170,12 @@ public class TeamPropAuto {
         if (!openWebcams.contains(webcamId))
             throw new AutonomousRobotException(TAG, "Attempt to find the team prop using webcam " + webcamId + " but it is not open");
 
-        Pair<RobotConstantsCenterStage.ProcessorIdentifier, VisionProcessor> rawFrameProcessor =
-                webcam.getVisionPortalWebcam().getActiveProcessor();
-        if (rawFrameProcessor.first != RobotConstantsCenterStage.ProcessorIdentifier.RAW_FRAME)
-            throw new AutonomousRobotException(TAG, "The active processor is not RAW_FRAME");
+        VisionProcessor rawFrameProcessor =
+                webcam.getVisionPortalWebcam().getEnabledProcessor(RobotConstantsCenterStage.ProcessorIdentifier.RAW_FRAME);
+        if (rawFrameProcessor == null)
+            throw new AutonomousRobotException(TAG, "The RAW_FRAME processor is not active");
 
-        RawFrameAccess rawFrameAccess = new RawFrameAccess((RawFrameProcessor) rawFrameProcessor.second);
+        RawFrameAccess rawFrameAccess = new RawFrameAccess((RawFrameProcessor) rawFrameProcessor);
 
         // Get the recognition path from the XML file.
         RobotConstantsCenterStage.TeamPropRecognitionPath teamPropRecognitionPath =
