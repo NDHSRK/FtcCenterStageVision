@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.common;
 
+import org.firstinspires.ftc.ftcdevcommon.Pair;
+
 import java.util.EnumMap;
 
 // Starting parameters that can be set via a dedicated TeleOp
@@ -12,12 +14,30 @@ public class StartParameters {
     public final int autoStartDelay;
     public final EnumMap<RobotConstantsCenterStage.OpMode, RobotConstantsCenterStage.AutoEndingPosition> autoEndingPositions;
 
+    public final QualiaStartParameters qualiaStartParameters;
     public StartParameters(String pRobotConfigFilename, String pRobotActionFilename, int pAutoStartDelay,
-                           EnumMap<RobotConstantsCenterStage.OpMode, RobotConstantsCenterStage.AutoEndingPosition> pAutoEndingPositions) {
+                           EnumMap<RobotConstantsCenterStage.OpMode, RobotConstantsCenterStage.AutoEndingPosition> pAutoEndingPositions,
+                           QualiaStartParameters pQualiaStartParameters) {
         robotConfigFilename = pRobotConfigFilename;
         robotActionFilename = pRobotActionFilename;
         autoStartDelay = pAutoStartDelay;
         autoEndingPositions = pAutoEndingPositions;
+        qualiaStartParameters = pQualiaStartParameters;
+    }
+
+    public static class QualiaStartParameters {
+        public enum Path {STAGE_DOOR, CENTER_TRUSS, WALL_TRUSS}
+        public enum MidPathDelayPoint {POST_SPIKE, PRE_BACKSTAGE}
+
+        public final Path path;
+        public final int midPathDelayPostSpike;
+        public final int midPathDelayPreBackstage;
+
+        public QualiaStartParameters(Path pPath, int pMidPathDelayPostSpike, int pMidPathDelayPreBackstage) {
+            path = pPath;
+            midPathDelayPostSpike = pMidPathDelayPostSpike;
+            midPathDelayPreBackstage = pMidPathDelayPreBackstage;
+        }
     }
 
 }

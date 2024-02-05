@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.common.xml;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.ftcdevcommon.AutonomousRobotException;
+import org.firstinspires.ftc.ftcdevcommon.Pair;
 import org.firstinspires.ftc.ftcdevcommon.xml.XMLUtils;
 import org.firstinspires.ftc.teamcode.common.RobotConstants;
 import org.firstinspires.ftc.teamcode.common.RobotConstantsCenterStage;
@@ -39,6 +40,12 @@ public class StartParametersXML {
     private final EnumMap<RobotConstantsCenterStage.OpMode, Node> autoEndingPositionNodes
             = new EnumMap<>(RobotConstantsCenterStage.OpMode.class);
 
+    // Qualia
+    private Node pathNode;
+    private Node postSpikeDelayMsNode;
+    private Node preBackstageDelayMsNode;
+
+    // Common
     private final StartParameters startParameters;
 
     // IntelliJ only
@@ -131,7 +138,36 @@ public class StartParametersXML {
             autoEndingPositionNodes.put(autoOpMode, opmode_node);
         });
 
-        startParameters = new StartParameters(robotConfigFilename, robotActionFilename, autoStartDelay, autoEndingPositions);
+        // Parse the optional <qualia_start_parameters>
+        StartParameters.QualiaStartParameters qualiaStartParameters = null;
+        Node qualia_node = ending_position_node.getNextSibling();
+        if (qualia_node != null) {
+            qualia_node = XMLUtils.getNextElement(qualia_node);
+            if (qualia_node == null || !qualia_node.getNodeName().equals("qualia_start_parameters"))
+                throw new AutonomousRobotException(TAG, "Element 'qualia_start_parameters' not found");
+
+            pathNode = qualia_node.getFirstChild();
+            pathNode = XMLUtils.getNextElement(pathNode);
+            if (pathNode == null || !pathNode.getNodeName().equals("path") || pathNode.getTextContent().isEmpty())
+                throw new AutonomousRobotException(TAG, "Element 'path' not found");
+
+            String pathString = pathNode.getTextContent().toUpperCase().trim();
+            StartParameters.QualiaStartParameters.Path path = StartParameters.QualiaStartParameters.Path.valueOf(pathString);
+
+            // Parse two <mid_path_delay> elements. The first must contain a first child of
+            // element <delay_point>post_spike</delay_point>; the second must contain a
+            // first child of <<delay_point>pre_backstage</delay_point>.
+            Node mid_path_delay_spike_node = pathNode.getNextSibling();
+            Pair<Node, Integer> midPathDelayPostSpike = parseMidPathDelay(mid_path_delay_spike_node, StartParameters.QualiaStartParameters.MidPathDelayPoint.POST_SPIKE);
+            postSpikeDelayMsNode = midPathDelayPostSpike.first;
+
+            Node mid_path_delay_backstage_node = mid_path_delay_spike_node.getNextSibling();
+            Pair<Node, Integer> midPathDelayPreBackstage = parseMidPathDelay(mid_path_delay_backstage_node, StartParameters.QualiaStartParameters.MidPathDelayPoint.PRE_BACKSTAGE);
+            preBackstageDelayMsNode = midPathDelayPreBackstage.first;
+            qualiaStartParameters = new StartParameters.QualiaStartParameters(path, midPathDelayPostSpike.second, midPathDelayPreBackstage.second);
+        }
+
+        startParameters = new StartParameters(robotConfigFilename, robotActionFilename, autoStartDelay, autoEndingPositions, qualiaStartParameters);
         RobotLog.ii(TAG, "In StartParametersXML; opened and parsed the XML file");
     }
 
@@ -153,16 +189,70 @@ public class StartParametersXML {
     }
 
     public void setAutoEndingPosition(RobotConstantsCenterStage.OpMode pAutoOpMode, String pEndingPositionText) {
-        RobotConstantsCenterStage.AutoEndingPosition endingPosition = RobotConstantsCenterStage.AutoEndingPosition.valueOf(pEndingPositionText);
-        RobotLog.ii(TAG, "Setting ending position " + pEndingPositionText + " for Autonomous OpMode " + pAutoOpMode + " in in startParameters");
+        String endingPositionText = pEndingPositionText.toUpperCase().trim();
+        RobotConstantsCenterStage.AutoEndingPosition endingPosition = RobotConstantsCenterStage.AutoEndingPosition.valueOf(endingPositionText);
+        RobotLog.ii(TAG, "Setting ending position " + endingPositionText + " for Autonomous OpMode " + pAutoOpMode + " in in startParameters");
 
         autoEndingPositions.put(pAutoOpMode, endingPosition);
         Node endingPositionNode = autoEndingPositionNodes.get(pAutoOpMode);
-        Objects.requireNonNull(endingPositionNode, TAG + " No ending position for OpMode " + pAutoOpMode).setTextContent(pEndingPositionText);
+        Objects.requireNonNull(endingPositionNode, TAG + " No ending position for OpMode " + pAutoOpMode).setTextContent(endingPositionText);
+    }
+
+    public void setQualiaPath(StartParameters.QualiaStartParameters.Path pPath) {
+        pathNode.setTextContent(pPath.toString());
+    }
+
+    public void setQualiaDelayPoint(StartParameters.QualiaStartParameters.MidPathDelayPoint pDelayPoint,
+                                    int pDelayMs) {
+        switch (pDelayPoint) {
+            case POST_SPIKE: {
+                postSpikeDelayMsNode.setTextContent(Integer.toString(pDelayMs));
+                break;
+            }
+            case PRE_BACKSTAGE: {
+                preBackstageDelayMsNode.setTextContent(Integer.toString(pDelayMs));
+                break;
+            }
+            default:
+                throw new AutonomousRobotException(TAG, "Invalid delay_point");
+        }
     }
 
     public void writeStartParametersFile() {
         XMLUtils.writeXMLFile(document, xmlFilePath, xmlDirectory + RobotConstants.XSLT_FILE_NAME);
+    }
+
+    private Pair<Node, Integer> parseMidPathDelay(Node pMidPathDelayNode, StartParameters.QualiaStartParameters.MidPathDelayPoint pDelayPoint) {
+        Node mid_path_delay_node = XMLUtils.getNextElement(pMidPathDelayNode);
+        if (mid_path_delay_node == null || !mid_path_delay_node.getNodeName().equals("mid_path_delay"))
+            throw new AutonomousRobotException(TAG, "Element 'mid_path_delay' not found");
+
+        Node delay_point_node = mid_path_delay_node.getFirstChild();
+        delay_point_node = XMLUtils.getNextElement(delay_point_node);
+        if (delay_point_node == null || !delay_point_node.getNodeName().equals("delay_point") || delay_point_node.getTextContent().isEmpty())
+            throw new AutonomousRobotException(TAG, "Element 'delay_point' not found");
+
+        String delayPointString = delay_point_node.getTextContent().toUpperCase().trim();
+        StartParameters.QualiaStartParameters.MidPathDelayPoint delayPoint =
+                StartParameters.QualiaStartParameters.MidPathDelayPoint.valueOf(delayPointString);
+
+        if (delayPoint != pDelayPoint)
+            throw new AutonomousRobotException(TAG, "Missing expected delay point " + pDelayPoint);
+
+        Node delay_ms_node = delay_point_node.getNextSibling();
+        delay_ms_node = XMLUtils.getNextElement(delay_ms_node);
+        if (delay_ms_node == null || !delay_ms_node.getNodeName().equals("delay_ms") || delay_ms_node.getTextContent().isEmpty())
+            throw new AutonomousRobotException(TAG, "Element 'delay_ms' not found");
+
+        String delayMsString = delay_ms_node.getTextContent();
+        int delayMs;
+        try {
+            delayMs = Integer.parseInt(delayMsString);
+        } catch (NumberFormatException nex) {
+            throw new AutonomousRobotException(TAG, "Invalid number format in element 'delay_ms'");
+        }
+
+        return Pair.create(delay_ms_node, delayMs);
     }
 
 }
