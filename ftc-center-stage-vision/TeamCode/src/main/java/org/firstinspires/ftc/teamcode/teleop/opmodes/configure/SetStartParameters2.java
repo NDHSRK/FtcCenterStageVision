@@ -54,7 +54,9 @@ public class SetStartParameters2 extends LinearOpMode {
     private StartParameters.QualiaStartParameters.Path currentPath;
     private int currentPostSpikeDelay;
     private int currentPreBackstageDelay;
-    private FTCToggleButton midPointDelay;
+    private FTCToggleButton midPathDelay;
+    private StartParameters.QualiaStartParameters.MidPathDelayPoint midPathDelayPoint =
+            StartParameters.QualiaStartParameters.MidPathDelayPoint.POST_SPIKE; // default
     // End QUALIA mode section
 
     // This section applies to the modal use of same buttons
@@ -82,7 +84,7 @@ public class SetStartParameters2 extends LinearOpMode {
         // Toggle button for switching between a post_spike delay and a pre_backstage delay.
         // DPAD right toggle button position A (default) is for the post_spike delay.
         // DPAD right Toggle button position B is for the pre_backstage delay.
-        midPointDelay = new FTCToggleButton(this, FTCButton.ButtonValue.GAMEPAD_1_RIGHT_BUMPER);
+        midPathDelay = new FTCToggleButton(this, FTCButton.ButtonValue.GAMEPAD_1_RIGHT_BUMPER);
 
         // Modal button assignments.
         modalIncreaseDelay = new FTCButton(this, FTCButton.ButtonValue.GAMEPAD_1_DPAD_UP);
@@ -163,7 +165,7 @@ public class SetStartParameters2 extends LinearOpMode {
         modalButton1X.update();
         modalButton1Y.update();
         modalButton1B.update();
-        midPointDelay.update();
+        midPathDelay.update();
     }
 
     private void updatePlayer1() {
@@ -179,20 +181,12 @@ public class SetStartParameters2 extends LinearOpMode {
             updateEndPositionRight();
             updateFactoryReset();
         } else {
-            //**TODO call Qualia update methods
-            // updateWallTrussPath();
-            // updateCenterTrussPath();
-            // updateStageDoorPath();
-            // updateDelayPointMode();
-            // updateIncreasePostSpikeDelay();
-            // updateDecreasePostSpikeDelay();
-            // updateIncreasePreBackstageDelay();
-            // updateDecreasePreBackstageDelay();
-            /*
-               private FTCButton modalButton1A; // standard opModeBlueA2, Qualia wall_truss
-    private FTCButton modalButton1X; // standard opModeBlueA4, Qualia center_truss path
-    private FTCButton modalButton1Y; // standard opModeRedF4, Qualia stage_door path
-             */
+            updateStageDoorPath();
+            updateCenterTrussPath();
+            updateWallTrussPath();
+            updateMidPointDelayPath();
+            updateIncreaseMidPathDelay();
+            updateDecreaseMidPathDelay();
         }
     }
 
@@ -213,29 +207,21 @@ public class SetStartParameters2 extends LinearOpMode {
     // STANDARD mode methods.
     private void updateIncreaseStartDelay() {
         if (modalIncreaseDelay.is((FTCButton.State.TAP))) {
-            if (currentStartDelay == MAX_DELAY)
-                telemetry.addLine("Start delay is at the maximum of " + MAX_DELAY);
-            else {
+            if (currentStartDelay < MAX_DELAY) {
                 ++currentStartDelay;
                 startParametersXML.setAutoStartDelay(currentStartDelay);
                 startParametersXMLChanged = true;
             }
-
-            telemetry.update();
         }
     }
 
     private void updateDecreaseStartDelay() {
         if (modalDecreaseDelay.is((FTCButton.State.TAP))) {
-            if (currentStartDelay == 0)
-                telemetry.addLine("Start delay is at the minimum of 0");
-            else {
+            if (currentStartDelay > 0) {
                 --currentStartDelay;
                 startParametersXML.setAutoStartDelay(currentStartDelay);
                 startParametersXMLChanged = true;
             }
-
-            telemetry.update();
         }
     }
 
@@ -309,69 +295,84 @@ public class SetStartParameters2 extends LinearOpMode {
 
     private void updateFactoryReset() {
         if (factoryReset.is(FTCButton.State.TAP)) {
-            //**TODO re-read the XML file and reset all fields and flags.
+            //**TODO reset all fields and flags, write, then re-read the XML file.
         }
-    };
+    }
 
     // QUALIA mode methods.
+    private void updateStageDoorPath() {
+        if (modalButton1Y.is(FTCButton.State.TAP)) {
+            currentPath = StartParameters.QualiaStartParameters.Path.STAGE_DOOR;
+            startParametersXML.setQualiaPath(StartParameters.QualiaStartParameters.Path.STAGE_DOOR);
+            startParametersXMLChanged = true;
+        }
+    }
 
-    //                private FTCButton modalButton1A; // standard opModeBlueA2, Qualia wall_truss
-    // private void updateWallTrussPath() {
-    //        if (modalButton1A.is(FTCButton.State.TAP)) {
-    //            //**TODO re-read the XML file and reset all fields and flags.
-    //        }
-    //    };
+    private void updateCenterTrussPath() {
+        if (modalButton1X.is(FTCButton.State.TAP)) {
+            currentPath = StartParameters.QualiaStartParameters.Path.CENTER_TRUSS;
+            startParametersXML.setQualiaPath(StartParameters.QualiaStartParameters.Path.CENTER_TRUSS);
+            startParametersXMLChanged = true;
+        }
+    }
 
-    //     private FTCButton modalButton1X; // standard opModeBlueA4, Qualia center_truss path
-    // private void updateCenterTrussPath() {
-    //        if (modalButton1X.is(FTCButton.State.TAP)) {
-    //            //**TODO re-read the XML file and reset all fields and flags.
-    //        }
-    //    };
+    private void updateWallTrussPath() {
+        if (modalButton1A.is(FTCButton.State.TAP)) {
+            currentPath = StartParameters.QualiaStartParameters.Path.WALL_TRUSS;
+            startParametersXML.setQualiaPath(StartParameters.QualiaStartParameters.Path.WALL_TRUSS);
+            startParametersXMLChanged = true;
+        }
+    }
 
-    //    private FTCButton modalButton1Y; // standard opModeRedF4, Qualia stage_door path
-    // private void updateStageDoorPath() {
-    //        if (modalButton1Y.is(FTCButton.State.TAP)) {
-    //            //**TODO re-read the XML file and reset all fields and flags.
-    //        }
-    //    };
+    private void updateMidPointDelayPath() {
+        if (midPathDelay.is(FTCButton.State.TAP)) {
+            if (startParameters.qualiaStartParameters == null) {
+                telemetry.addLine("Toggle disallowed: Qualia elements are not present in StartParameters.xml");
+                telemetry.update();
+                return;
+            }
 
-   /*
-       private void updateDelayPointMode() { //**TODO
-        if (toggleMode.is(FTCButton.State.TAP)) {
-            if (toggleMode.toggle() == FTCToggleButton.ToggleState.A)
-                mode = Mode.STANDARD;
-            else {
-                if (startParameters.qualiaStartParameters == null) {
-                    telemetry.addLine("Toggle disallowed: Qualia elements are not present in StartParameters.xml");
-                    telemetry.update();
-                } else
-                    mode = Mode.QUALIA;
+            if (midPathDelay.toggle() == FTCToggleButton.ToggleState.A)
+                midPathDelayPoint = StartParameters.QualiaStartParameters.MidPathDelayPoint.POST_SPIKE;
+            else
+                midPathDelayPoint = StartParameters.QualiaStartParameters.MidPathDelayPoint.PRE_BACKSTAGE;
+        }
+    }
+
+    private void updateIncreaseMidPathDelay() {
+        if (modalIncreaseDelay.is(FTCButton.State.TAP)) {
+            if (midPathDelayPoint == StartParameters.QualiaStartParameters.MidPathDelayPoint.POST_SPIKE) {
+                if (currentPostSpikeDelay < MAX_DELAY) {
+                    ++currentPostSpikeDelay;
+                    startParametersXML.setQualiaDelayPoint(midPathDelayPoint, currentPostSpikeDelay);
+                    startParametersXMLChanged = true;
+                }
+            } else if (midPathDelayPoint == StartParameters.QualiaStartParameters.MidPathDelayPoint.PRE_BACKSTAGE) {
+                if (currentPreBackstageDelay < MAX_DELAY) {
+                    ++currentPreBackstageDelay;
+                    startParametersXML.setQualiaDelayPoint(midPathDelayPoint, currentPreBackstageDelay);
+                    startParametersXMLChanged = true;
+                }
             }
         }
     }
-    */
-    // private void updateIncreasePostSpikeDelay() {
-    //        if (modalIncreaseDelay.is(FTCButton.State.TAP)) {
-    //            //**TODO re-read the XML file and reset all fields and flags.
-    //        }
-    //    };
 
-    // private void updateDecreasePostSpikeDelay() {
-    //        if (modalDecreaseDelay.is(FTCButton.State.TAP)) {
-    //            //**TODO re-read the XML file and reset all fields and flags.
-    //        }
-    //    };
+    private void updateDecreaseMidPathDelay() {
+        if (modalDecreaseDelay.is(FTCButton.State.TAP)) {
+            if (midPathDelayPoint == StartParameters.QualiaStartParameters.MidPathDelayPoint.POST_SPIKE) {
+                if (currentPostSpikeDelay > 0) {
+                    --currentPostSpikeDelay;
+                    startParametersXML.setQualiaDelayPoint(midPathDelayPoint, currentPostSpikeDelay);
+                    startParametersXMLChanged = true;
+                }
+            } else if (midPathDelayPoint == StartParameters.QualiaStartParameters.MidPathDelayPoint.PRE_BACKSTAGE) {
+                if (currentPreBackstageDelay > 0) {
+                    --currentPreBackstageDelay;
+                    startParametersXML.setQualiaDelayPoint(midPathDelayPoint, currentPreBackstageDelay);
+                    startParametersXMLChanged = true;
+                }
+            }
+        }
+    }
 
-    // private void updateIncreasePreBackstageDelay() {
-    //        if (modalIncreaseDelay.is(FTCButton.State.TAP)) {
-    //            //**TODO re-read the XML file and reset all fields and flags.
-    //        }
-    //    };
-
-    // private void updateDecreasePreBackstageDelay() {
-    //        if (modalDecreaseDelay.is(FTCButton.State.TAP)) {
-    //            //**TODO re-read the XML file and reset all fields and flags.
-    //        }
-    //    };
 }
