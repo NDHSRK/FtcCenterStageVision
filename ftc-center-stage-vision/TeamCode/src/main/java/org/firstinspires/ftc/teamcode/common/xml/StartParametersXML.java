@@ -158,10 +158,12 @@ public class StartParametersXML {
             // element <delay_point>post_spike</delay_point>; the second must contain a
             // first child of <<delay_point>pre_backstage</delay_point>.
             Node mid_path_delay_spike_node = pathNode.getNextSibling();
+            mid_path_delay_spike_node = XMLUtils.getNextElement(mid_path_delay_spike_node);
             Pair<Node, Integer> midPathDelayPostSpike = parseMidPathDelay(mid_path_delay_spike_node, StartParameters.QualiaStartParameters.MidPathDelayPoint.POST_SPIKE);
             postSpikeDelayMsNode = midPathDelayPostSpike.first;
 
             Node mid_path_delay_backstage_node = mid_path_delay_spike_node.getNextSibling();
+            mid_path_delay_backstage_node = XMLUtils.getNextElement(mid_path_delay_backstage_node);
             Pair<Node, Integer> midPathDelayPreBackstage = parseMidPathDelay(mid_path_delay_backstage_node, StartParameters.QualiaStartParameters.MidPathDelayPoint.PRE_BACKSTAGE);
             preBackstageDelayMsNode = midPathDelayPreBackstage.first;
             qualiaStartParameters = new StartParameters.QualiaStartParameters(path, midPathDelayPostSpike.second, midPathDelayPreBackstage.second);
@@ -223,11 +225,10 @@ public class StartParametersXML {
     }
 
     private Pair<Node, Integer> parseMidPathDelay(Node pMidPathDelayNode, StartParameters.QualiaStartParameters.MidPathDelayPoint pDelayPoint) {
-        Node mid_path_delay_node = XMLUtils.getNextElement(pMidPathDelayNode);
-        if (mid_path_delay_node == null || !mid_path_delay_node.getNodeName().equals("mid_path_delay"))
+        if (pMidPathDelayNode == null || !pMidPathDelayNode.getNodeName().equals("mid_path_delay"))
             throw new AutonomousRobotException(TAG, "Element 'mid_path_delay' not found");
 
-        Node delay_point_node = mid_path_delay_node.getFirstChild();
+        Node delay_point_node = pMidPathDelayNode.getFirstChild();
         delay_point_node = XMLUtils.getNextElement(delay_point_node);
         if (delay_point_node == null || !delay_point_node.getNodeName().equals("delay_point") || delay_point_node.getTextContent().isEmpty())
             throw new AutonomousRobotException(TAG, "Element 'delay_point' not found");
