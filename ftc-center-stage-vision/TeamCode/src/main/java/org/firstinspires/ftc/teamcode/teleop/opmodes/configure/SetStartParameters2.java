@@ -115,26 +115,10 @@ public class SetStartParameters2 extends LinearOpMode {
             currentPreBackstageDelay = startParameters.qualiaStartParameters.midPathDelayPreBackstage;
         }
 
-        //**TODO this should be part of the main loop ... with different
-        // output depending on the mode.
-        telemetry.addLine("The current mode is STANDARD");
-        if (startParameters.qualiaStartParameters != null)
-            telemetry.addLine("Press the DPAD left bumper to toggle to QUALIA");
-
-        telemetry.addLine("The current start delay is " + currentStartDelay);
-        telemetry.addLine("DPAD_UP to increase delay; DPAD_DOWN to decrease");
-        telemetry.addLine("Hold ABXY buttons to select OpMode:");
-        telemetry.addLine("  A for BLUE_A2, X for BLUE_A4");
-        telemetry.addLine("  Y for RED_F4, B for RED_F2");
-        telemetry.addLine("Touch DPAD left or right for ending position");
-        telemetry.addLine("Touch play to SAVE changes and END the OpMode");
-        telemetry.update();
-
         while (!isStarted() && !isStopRequested()) {
             updateButtons();
             updatePlayer1();
-
-            //**TODO updateTelemetry();
+            updateTelemetry();
 
             sleep(50); // Don't burn CPU cycles busy-looping
         } // while
@@ -295,7 +279,7 @@ public class SetStartParameters2 extends LinearOpMode {
 
     private void updateFactoryReset() {
         if (factoryReset.is(FTCButton.State.TAP)) {
-            //**TODO reset all fields and flags, write, then re-read the XML file.
+            //**TODO reset all fields and flags, update the XML file and write it out.
         }
     }
 
@@ -373,6 +357,37 @@ public class SetStartParameters2 extends LinearOpMode {
                 }
             }
         }
+    }
+
+    private void updateTelemetry() {
+        if (mode == Mode.STANDARD) {
+            telemetry.addLine("The current mode is STANDARD");
+            if (startParameters.qualiaStartParameters != null)
+                telemetry.addLine("Press the DPAD left bumper to toggle to QUALIA");
+
+            telemetry.addLine("The current start delay is " + currentStartDelay);
+            telemetry.addLine("Press DPAD_UP to increase delay; DPAD_DOWN to decrease");
+            telemetry.addLine("Press ABXY buttons to select OpMode:");
+            telemetry.addLine("  A for BLUE_A2, X for BLUE_A4");
+            telemetry.addLine("  Y for RED_F4, B for RED_F2");
+            telemetry.addLine("Press DPAD left or right for ending position");
+            telemetry.addLine("Press START for factory reset");
+        } else { // Mode.QUALIA
+            telemetry.addLine("The current mode is QUALIA");
+            telemetry.addLine("Press YXA buttons to select the path:");
+            telemetry.addLine("  Y for stage door truss, X for center, A for wall");
+            telemetry.addLine("The current path is " + currentPath);
+            telemetry.addLine("Press the RIGHT_BUMPER to toggle the mid path delay");
+            telemetry.addLine("The mid path delay is for " + midPathDelayPoint);
+            if (midPathDelayPoint == StartParameters.QualiaStartParameters.MidPathDelayPoint.POST_SPIKE)
+                telemetry.addLine("The current delay is " + currentPostSpikeDelay);
+            else
+                telemetry.addLine("The current delay is " + currentPreBackstageDelay);
+            telemetry.addLine("Press DPAD_UP to increase delay; DPAD_DOWN to decrease");
+        }
+
+        telemetry.addLine("Touch play to SAVE changes and END the OpMode");
+        telemetry.update();
     }
 
 }
