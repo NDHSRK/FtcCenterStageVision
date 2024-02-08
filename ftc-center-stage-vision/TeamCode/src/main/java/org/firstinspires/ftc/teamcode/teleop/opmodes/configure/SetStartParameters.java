@@ -35,6 +35,7 @@ public class SetStartParameters extends LinearOpMode {
     private static final int MAX_DELAY = 10; // applies to all delays
 
     private enum Mode {STANDARD, QUALIA}
+
     private Mode mode = Mode.STANDARD;
     // Toggle button for switching between the standard button layout
     // and the Qualia button layout.
@@ -55,8 +56,7 @@ public class SetStartParameters extends LinearOpMode {
     private int currentPreBackstageDelay;
     // Toggle button for switching between a post_spike delay and a pre_backstage delay.
     private FTCToggleButton midPathDelay;
-    private StartParameters.QualiaStartParameters.MidPathDelayPoint midPathDelayPoint =
-            StartParameters.QualiaStartParameters.MidPathDelayPoint.POST_SPIKE; // default
+    private StartParameters.QualiaStartParameters.MidPathDelayPoint midPathDelayPoint;
     // End QUALIA mode section
 
     // This section applies to the modal use of same buttons
@@ -94,26 +94,7 @@ public class SetStartParameters extends LinearOpMode {
         modalButton1Y = new FTCButton(this, FTCButton.ButtonValue.GAMEPAD_1_Y);
         modalButton1B = new FTCButton(this, FTCButton.ButtonValue.GAMEPAD_1_B);
 
-        String fullXMLDir = WorkingDirectory.getWorkingDirectory() + RobotConstants.XML_DIR;
-        try {
-            startParametersXML = new StartParametersXML(fullXMLDir);
-        } catch (ParserConfigurationException | SAXException | IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        startParameters = startParametersXML.getStartParameters();
-
-        currentStartDelay = startParameters.autoStartDelay;
-        autoEndingPositions = new EnumMap<>(startParameters.autoEndingPositions); // copy
-
-        //## Note: StartParameters.QualiaStartParameters may be null because
-        // these parameters are optional. If this object is null then the
-        // mode toggle button will not switch to Qualia actions.
-        if (startParameters.qualiaStartParameters != null) {
-            currentPath = startParameters.qualiaStartParameters.path;
-            currentPostSpikeDelay = startParameters.qualiaStartParameters.midPathDelayPostSpike;
-            currentPreBackstageDelay = startParameters.qualiaStartParameters.midPathDelayPreBackstage;
-        }
+        initializeStartParameters();
 
         while (!isStarted() && !isStopRequested()) {
             updateButtons();
@@ -129,6 +110,7 @@ public class SetStartParameters extends LinearOpMode {
                 RobotLog.ii(TAG, "Writing StartParameters.xml");
                 telemetry.addLine("Writing StartParameters.xml");
             } else
+                //**TODO Do not output if factory reset has been executed
                 telemetry.addLine("No changes to StartParameters.xml");
 
             telemetry.update();
@@ -137,6 +119,9 @@ public class SetStartParameters extends LinearOpMode {
     }
 
     private void updateButtons() {
+        //**TODO if a factory reset has been requested only update
+        // modalButton1Y and modalButton1X.
+
         toggleMode.update();
 
         modalIncreaseDelay.update();
@@ -155,6 +140,9 @@ public class SetStartParameters extends LinearOpMode {
     private void updatePlayer1() {
         updateMode();
         if (mode == Mode.STANDARD) {
+            //**TODO if a factory reset has been requested only call
+            // updateFactoryResetConfirm (modalButton1Y) and updateFactoryResetCancel (modalButton1X).
+
             updateIncreaseStartDelay();
             updateDecreaseStartDelay();
             updateOpModeBlueA2();
@@ -279,8 +267,37 @@ public class SetStartParameters extends LinearOpMode {
 
     private void updateFactoryReset() {
         if (factoryReset.is(FTCButton.State.TAP)) {
-            //**TODO reset all fields and flags, call all XML set... methods
-            // and write out the XML file.
+
+            //**TODO Confirmation Y button; cancel X
+
+            // Call all XML set... methods and reset the values to their defaults.
+            startParametersXML.setAutoStartDelay(0);
+
+            // Reset the ending position for each OpMode to be the closest wall.
+            startParametersXML.setAutoEndingPosition(RobotConstantsCenterStage.OpMode.BLUE_A2, RobotConstantsCenterStage.AutoEndingPosition.LEFT.toString());
+            startParametersXML.setAutoEndingPosition(RobotConstantsCenterStage.OpMode.BLUE_A4, RobotConstantsCenterStage.AutoEndingPosition.LEFT.toString());
+            startParametersXML.setAutoEndingPosition(RobotConstantsCenterStage.OpMode.RED_F2, RobotConstantsCenterStage.AutoEndingPosition.RIGHT.toString());
+            startParametersXML.setAutoEndingPosition(RobotConstantsCenterStage.OpMode.RED_F4, RobotConstantsCenterStage.AutoEndingPosition.RIGHT.toString());
+
+            if (startParameters.qualiaStartParameters != null) {
+                startParametersXML.setQualiaPath(StartParameters.QualiaStartParameters.Path.STAGE_DOOR);
+                startParametersXML.setQualiaDelayPoint(StartParameters.QualiaStartParameters.MidPathDelayPoint.POST_SPIKE, 0);
+                startParametersXML.setQualiaDelayPoint(StartParameters.QualiaStartParameters.MidPathDelayPoint.PRE_BACKSTAGE, 0);
+            }
+
+            // Write out the XML file.
+            startParametersXML.writeStartParametersFile();
+            RobotLog.ii(TAG, "Writing StartParameters.xml");
+            telemetry.addLine("Writing StartParameters.xml");
+            telemetry.update();
+            sleep(1500);
+
+            // Read the XML file back in.
+            initializeStartParameters();
+
+            // Reinitialize toggle buttons to their default "A" positions.
+            toggleMode = new FTCToggleButton(this, FTCButton.ButtonValue.GAMEPAD_1_LEFT_BUMPER);
+            midPathDelay = new FTCToggleButton(this, FTCButton.ButtonValue.GAMEPAD_1_RIGHT_BUMPER);
         }
     }
 
@@ -360,7 +377,37 @@ public class SetStartParameters extends LinearOpMode {
         }
     }
 
+    private void initializeStartParameters() {
+        startParametersXMLChanged = false;
+        mode = Mode.STANDARD;
+        currentOpMode = RobotConstantsCenterStage.OpMode.OPMODE_NPOS;
+
+        String fullXMLDir = WorkingDirectory.getWorkingDirectory() + RobotConstants.XML_DIR;
+        try {
+            startParametersXML = new StartParametersXML(fullXMLDir);
+        } catch (ParserConfigurationException | SAXException | IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        startParameters = startParametersXML.getStartParameters();
+
+        currentStartDelay = startParameters.autoStartDelay;
+        autoEndingPositions = new EnumMap<>(startParameters.autoEndingPositions); // copy
+
+        //## Note: StartParameters.QualiaStartParameters may be null because
+        // these parameters are optional. If this object is null then the
+        // mode toggle button will not switch to Qualia actions.
+        if (startParameters.qualiaStartParameters != null) {
+            currentPath = startParameters.qualiaStartParameters.path;
+            midPathDelayPoint = StartParameters.QualiaStartParameters.MidPathDelayPoint.POST_SPIKE; // default
+            currentPostSpikeDelay = startParameters.qualiaStartParameters.midPathDelayPostSpike;
+            currentPreBackstageDelay = startParameters.qualiaStartParameters.midPathDelayPreBackstage;
+        }
+    }
+
     private void updateTelemetry() {
+        //**TODO if a factory reset has been requested only show the confirm/cancel options.
+
         if (mode == Mode.STANDARD) {
             telemetry.addLine("The current mode is STANDARD");
             if (startParameters.qualiaStartParameters != null)
