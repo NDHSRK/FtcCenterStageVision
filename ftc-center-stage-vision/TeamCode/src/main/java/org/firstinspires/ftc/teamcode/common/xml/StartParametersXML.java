@@ -141,6 +141,7 @@ public class StartParametersXML {
         // Parse the optional <qualia_start_parameters>
         StartParameters.QualiaStartParameters qualiaStartParameters = null;
         Node qualia_node = ending_position_node.getNextSibling();
+        qualia_node = XMLUtils.getNextElement(qualia_node);
         if (qualia_node != null) {
             qualia_node = XMLUtils.getNextElement(qualia_node);
             if (qualia_node == null || !qualia_node.getNodeName().equals("qualia_start_parameters"))

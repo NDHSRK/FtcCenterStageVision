@@ -114,8 +114,8 @@ public class SetStartParameters extends LinearOpMode {
                 telemetry.addLine("Writing StartParameters.xml");
             } else
                 // Do not output if factory reset has been executed.
-            if (!factoryResetExecuted)
-                telemetry.addLine("No changes to StartParameters.xml");
+                if (!factoryResetExecuted)
+                    telemetry.addLine("No changes to StartParameters.xml");
 
             telemetry.update();
             sleep(1500);
@@ -151,7 +151,7 @@ public class SetStartParameters extends LinearOpMode {
         // confirm or cancel.
         if (factoryResetRequested) {
             if (!updateFactoryResetConfirm())
-              updateFactoryResetCancel();
+                updateFactoryResetCancel();
             return;
         }
 
@@ -327,7 +327,7 @@ public class SetStartParameters extends LinearOpMode {
 
     private void updateFactoryResetCancel() {
         if (modalButton1X.is(FTCButton.State.TAP))
-          factoryResetRequested = false;
+            factoryResetRequested = false;
     }
 
     // QUALIA mode methods.
