@@ -435,8 +435,6 @@ public class SetStartParameters extends LinearOpMode {
     }
 
     private void updateTelemetry() {
-
-
         if (mode == Mode.STANDARD) {
             telemetry.addLine("The current mode is STANDARD");
 
@@ -449,7 +447,7 @@ public class SetStartParameters extends LinearOpMode {
             }
 
             if (startParameters.qualiaStartParameters != null)
-                telemetry.addLine("Press the DPAD left bumper to toggle to QUALIA");
+                telemetry.addLine("Press the LEFT BUMPER to toggle to QUALIA");
 
             telemetry.addLine("The current start delay is " + currentStartDelay);
             telemetry.addLine("Press DPAD_UP to increase delay; DPAD_DOWN to decrease");
