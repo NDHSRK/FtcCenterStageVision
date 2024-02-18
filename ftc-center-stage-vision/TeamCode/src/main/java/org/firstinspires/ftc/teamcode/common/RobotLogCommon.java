@@ -1,10 +1,13 @@
-package org.firstinspires.ftc.ftcdevcommon.platform.android;
+package org.firstinspires.ftc.teamcode.common;
 
 import android.annotation.SuppressLint;
 import android.util.Log;
 
+import com.qualcomm.robotcore.util.RobotLog;
+
 import org.firstinspires.ftc.ftcdevcommon.Pair;
 import org.firstinspires.ftc.ftcdevcommon.Threading;
+import org.firstinspires.ftc.ftcdevcommon.platform.android.TimeStamp;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -82,6 +85,9 @@ public class RobotLogCommon {
         put(LogIdentifier.APP_LOG, "AppLog_");
     }};
 
+    // Use the FTC RobotLog as a default for OpModes where we don't
+    // need custom logging.
+    private static boolean useFTCRobotLog = true;
     private static LogIdentifier currentLogIdentifier = LogIdentifier.NONE;
     private static LogData currentLogData;
 
@@ -107,6 +113,7 @@ public class RobotLogCommon {
         // Now we can initialize the requested logger.
         Log.d(TAG, "Initializing the requested logger");
         OpenStatus openStatus;
+        useFTCRobotLog = false;
         try {
             // Log file initialization is based on --
             //https://www.logicbig.com/tutorials/core-java-tutorial/logging/customizing-default-format.html
@@ -166,10 +173,15 @@ public class RobotLogCommon {
             currentLogIdentifier = LogIdentifier.NONE;
             currentLogData = null;
             openStatus = OpenStatus.LOGGING_DISABLED;
+            useFTCRobotLog = true;
             Log.d(TAG, "Error in logger initialization; logging is disabled");
         }
 
         return openStatus;
+    }
+
+    public static synchronized boolean usingFTCRobotLog() {
+        return useFTCRobotLog;
     }
 
     public static synchronized void setMostDetailedLogLevel(final Level pLogLevel) {
@@ -210,29 +222,52 @@ public class RobotLogCommon {
         return currentLogData.logger.getLevel();
     }
 
+    // Error
     public static void e(String pTAG, String pLogMessage) {
-        enqueueLogEntry(Level.SEVERE, pTAG + " " + pLogMessage);
+        if (useFTCRobotLog)
+            RobotLog.ee(pTAG, pLogMessage);
+        else
+            enqueueLogEntry(Level.SEVERE, pTAG + " " + pLogMessage);
     }
 
-    // Highest
+    // Information
     public static void i(String pTAG, String pLogMessage) {
-        enqueueLogEntry(Level.INFO, pTAG + " " + pLogMessage);
+        if (useFTCRobotLog)
+            RobotLog.ii(pTAG, pLogMessage);
+        else
+            enqueueLogEntry(Level.INFO, pTAG + " " + pLogMessage);
     }
 
+    // Configuration
     public static void c(String pTAG, String pLogMessage) {
-        enqueueLogEntry(Level.CONFIG, pTAG + " " + pLogMessage);
+        if (useFTCRobotLog)
+            RobotLog.aa(pTAG, pLogMessage); // take to be "administrative"
+        else
+            enqueueLogEntry(Level.CONFIG, pTAG + " " + pLogMessage);
     }
 
+    // Debugging
     public static void d(String pTAG, String pLogMessage) {
-        enqueueLogEntry(Level.FINE, pTAG + " " + pLogMessage);
+        if (useFTCRobotLog)
+            RobotLog.dd(pTAG, pLogMessage);
+        else
+            enqueueLogEntry(Level.FINE, pTAG + " " + pLogMessage);
     }
 
+    // Verbose
     public static void v(String pTAG, String pLogMessage) {
-        enqueueLogEntry(Level.FINER, pTAG + " " + pLogMessage);
+        if (useFTCRobotLog)
+            RobotLog.vv(pTAG, pLogMessage);
+        else
+            enqueueLogEntry(Level.FINER, pTAG + " " + pLogMessage);
     }
 
+    // Very verbose
     public static void vv(String pTAG, String pLogMessage) {
-        enqueueLogEntry(Level.FINEST, pTAG + " " + pLogMessage);
+        if (useFTCRobotLog)
+            RobotLog.vv(pTAG, pLogMessage);
+        else
+            enqueueLogEntry(Level.FINEST, pTAG + " " + pLogMessage);
     }
 
     // Even though the BlockingQueue is thread-safe there's a warning about drainTo:

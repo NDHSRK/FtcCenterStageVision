@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.ftcdevcommon.AutonomousRobotException;
 import org.firstinspires.ftc.ftcdevcommon.Pair;
-import org.firstinspires.ftc.ftcdevcommon.platform.android.RobotLogCommon;
+import org.firstinspires.ftc.teamcode.common.RobotLogCommon;
 import org.firstinspires.ftc.teamcode.xml.VisionParameters;
 import org.opencv.android.Utils;
 import org.opencv.core.*;
@@ -181,7 +181,7 @@ public class ImageUtils {
         Mat adjusted = adjustSaturationAndValueMedians(hsvROI, pHSVParameters.saturation_median_target,  pHSVParameters.value_median_target);
 
         // Convert back to BGR.
-        if (pOutputFilenamePreamble != null && RobotLogCommon.isLoggable("v")) {
+        if (pOutputFilenamePreamble != null && (RobotLogCommon.isLoggable("v") || RobotLogCommon.usingFTCRobotLog())) {
             Mat adjustedBGR = new Mat();
             Imgproc.cvtColor(adjusted, adjustedBGR, Imgproc.COLOR_HSV2BGR);
             Imgcodecs.imwrite(pOutputFilenamePreamble + "_ADJ" + pFilenameSuffix + ".png", adjustedBGR);
@@ -273,7 +273,7 @@ public class ImageUtils {
         Mat grayROI = new Mat();
         Imgproc.cvtColor(pBGRInputROI, grayROI, Imgproc.COLOR_BGR2GRAY);
 
-        if (pOutputFilenamePreamble != null && RobotLogCommon.isLoggable("v")) {
+        if (pOutputFilenamePreamble != null && (RobotLogCommon.isLoggable("v") || RobotLogCommon.usingFTCRobotLog())) {
             Imgcodecs.imwrite(pOutputFilenamePreamble + "_GRAY.png", grayROI);
             RobotLog.vv(TAG, "Writing " + pOutputFilenamePreamble + "_GRAY.png");
         }
@@ -284,7 +284,7 @@ public class ImageUtils {
     public static Mat performThresholdOnGray(Mat pGrayInputROI, String pOutputFilenamePreamble,
                                              int pGrayscaleMedianTarget, int pLowThreshold) {
         Mat adjustedGray = adjustGrayscaleMedian(pGrayInputROI, pGrayscaleMedianTarget);
-        if (pOutputFilenamePreamble != null && RobotLogCommon.isLoggable("v")) {
+        if (pOutputFilenamePreamble != null && (RobotLogCommon.isLoggable("v") || RobotLogCommon.usingFTCRobotLog())) {
             Imgcodecs.imwrite(pOutputFilenamePreamble + "_ADJ.png", adjustedGray);
             RobotLog.vv(TAG, "Writing adjusted grayscale image " + pOutputFilenamePreamble + "_ADJ.png");
         }
@@ -370,7 +370,7 @@ public class ImageUtils {
 
         // Within the ROI draw all of the contours.
         RobotLog.dd(TAG, "Number of contours " + contours.size());
-        if (pOutputFilenamePreamble != null && RobotLogCommon.isLoggable("v")) {
+        if (pOutputFilenamePreamble != null && (RobotLogCommon.isLoggable("v") || RobotLogCommon.usingFTCRobotLog())) {
             Mat contoursDrawn = pImageROI.clone();
             ShapeDrawing.drawShapeContours(contours, contoursDrawn);
             Imgcodecs.imwrite(pOutputFilenamePreamble + "_CON.png", contoursDrawn);
