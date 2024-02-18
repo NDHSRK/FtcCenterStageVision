@@ -9,10 +9,10 @@ import org.firstinspires.ftc.ftcdevcommon.Pair;
 import org.firstinspires.ftc.ftcdevcommon.platform.android.WorkingDirectory;
 import org.firstinspires.ftc.teamcode.auto.vision.ImageUtils;
 import org.firstinspires.ftc.teamcode.auto.vision.TeamPropRecognition;
-import org.firstinspires.ftc.teamcode.auto.vision.VisionParameters;
 import org.firstinspires.ftc.teamcode.common.RobotConstants;
 import org.firstinspires.ftc.teamcode.common.RobotConstantsCenterStage;
-import org.firstinspires.ftc.teamcode.common.SpikeWindowMapping;
+import org.firstinspires.ftc.teamcode.xml.SpikeWindowMapping;
+import org.firstinspires.ftc.teamcode.xml.VisionParameters;
 import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
@@ -25,35 +25,37 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class PixelCountRendering implements CameraStreamRendering {
-    private static final String TAG = PixelCountRendering.class.getSimpleName();
 
     private final LinearOpMode linear;
     private final RobotConstantsCenterStage.OpMode opMode;
     private final RobotConstants.Alliance alliance;
     private final AtomicReference<VisionParameters.GrayParameters> allianceGrayParameters = new AtomicReference<>();
-    private final int allianceMinWhitePixelCount;
     private final SpikeWindowMapping spikeWindowMapping;
     private final Pair<Rect, RobotConstantsCenterStage.TeamPropLocation> leftWindow;
     private final Pair<Rect, RobotConstantsCenterStage.TeamPropLocation> rightWindow;
+    private AtomicReference<Pair<String, String>> teamPropResults = new AtomicReference<>(); // null AtomiceReference
     private final AtomicBoolean requestImageCapture = new AtomicBoolean();
     private int captureCount;
     private final String outputFilePreamble;
-    private Mat bgrFrame = new Mat();
+    private final Mat bgrFrame = new Mat();
 
     public PixelCountRendering(LinearOpMode pLinear, RobotConstantsCenterStage.OpMode pOpMode,
                                RobotConstants.Alliance pAlliance,
                                VisionParameters.GrayParameters pAllianceGrayParameters,
-                               int pAllianceMinWhitePixelCount,
                                SpikeWindowMapping pSpikeWindowMapping) {
         linear = pLinear;
         opMode = pOpMode;
         alliance = pAlliance;
         allianceGrayParameters.set(pAllianceGrayParameters);
-        allianceMinWhitePixelCount = pAllianceMinWhitePixelCount;
         spikeWindowMapping = pSpikeWindowMapping;
         leftWindow = spikeWindowMapping.spikeWindows.get(RobotConstantsCenterStage.SpikeLocationWindow.LEFT);
         rightWindow = spikeWindowMapping.spikeWindows.get(RobotConstantsCenterStage.SpikeLocationWindow.RIGHT);
         outputFilePreamble = WorkingDirectory.getWorkingDirectory() + RobotConstants.IMAGE_DIR;
+    }
+
+    // May return null if no results have been set.
+    public Pair<String, String> getTeamPropResults() {
+        return teamPropResults.get();
     }
 
     public void setGrayscaleThresholdParameters(VisionParameters.GrayParameters pGrayParameters) {
@@ -71,6 +73,12 @@ public class PixelCountRendering implements CameraStreamRendering {
             captureCount++;
 
         Imgproc.cvtColor(pWebcamFrame, bgrFrame, Imgproc.COLOR_RGBA2BGR);
+
+        if (captureNow) {
+            String outputFilename = outputFilePreamble + "PixelCount_" + opMode + String.format(Locale.US, "_%04d_IMG.png", captureCount);
+            Imgcodecs.imwrite(outputFilename, bgrFrame);
+        }
+
         Mat imageROI = ImageUtils.preProcessImage(bgrFrame, null, spikeWindowMapping.imageParameters);
 
         // Use the grayscale and pixel count criteria parameters for the current alliance.
@@ -93,23 +101,19 @@ public class PixelCountRendering implements CameraStreamRendering {
             Imgcodecs.imwrite(outputFilename, thresholded);
         }
 
-        linear.telemetry.addLine("Grayscale median " + localGrayParameters.median_target);
-        linear.telemetry.addLine("Grayscale low threshold " + localGrayParameters.threshold_low);
-        linear.telemetry.addLine("Minimum white pixel count " + allianceMinWhitePixelCount);
-        linear.telemetry.addLine("Threshold values: low " + localGrayParameters.threshold_low + ", high 255");
-
         // Get the white pixel count for both the left and right
         // spike windows.
         Rect leftSpikeWindowBoundary = leftWindow.first;
         Mat leftSpikeWindow = thresholded.submat(leftSpikeWindowBoundary);
         int leftNonZeroCount = Core.countNonZero(leftSpikeWindow);
-        linear.telemetry.addLine(leftWindow.second.toString() + " white pixel count " + leftNonZeroCount);
+        String leftwindowResults = leftWindow.second.toString() + " white pixel count " + leftNonZeroCount;
 
         Rect rightSpikeWindowBoundary = rightWindow.first;
         Mat rightSpikeWindow = thresholded.submat(rightSpikeWindowBoundary);
         int rightNonZeroCount = Core.countNonZero(rightSpikeWindow);
-        linear.telemetry.addLine(rightWindow.second.toString() + " white pixel count " + rightNonZeroCount);
-        linear.telemetry.update();
+        String rightwindowResults = rightWindow.second.toString() + " white pixel count " + rightNonZeroCount;
+
+        teamPropResults.set(Pair.create(leftwindowResults, rightwindowResults));
 
         // Show the thresholded ROI in the DS camera stream.
         // First convert the thresholded ROI to an Android Bitmap.
@@ -137,8 +141,8 @@ public class PixelCountRendering implements CameraStreamRendering {
         //pDriverStationScreenCanvas.drawBitmap(bmp, null, destRect, null);
 
         // This method displays a centered inset.
-        float insetLeft = (onscreenWidth / 2) - (spikeWindowMapping.imageParameters.image_roi.width / 2);
-        float insetTop = (onscreenHeight / 2) - (spikeWindowMapping.imageParameters.image_roi.height / 2);
+        float insetLeft = (float) ((onscreenWidth / 2) - (spikeWindowMapping.imageParameters.image_roi.width / 2));
+        float insetTop = (float) ((onscreenHeight / 2) - (spikeWindowMapping.imageParameters.image_roi.height / 2));
         pDriverStationScreenCanvas.drawBitmap(bmp, insetLeft, insetTop, null);
     }
 

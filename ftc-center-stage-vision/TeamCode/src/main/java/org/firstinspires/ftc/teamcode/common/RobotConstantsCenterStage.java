@@ -27,6 +27,7 @@ public class RobotConstantsCenterStage {
         // they don't appear on the Driver Station but they are
         // present in RobotAction.xml.
         TEAM_PROP_CALIBRATION(OpModeType.PSEUDO_OPMODE),
+
         // Indication that an OpMode has not yet been assigned.
         OPMODE_NPOS(OpModeType.PSEUDO_OPMODE);
 
@@ -45,12 +46,11 @@ public class RobotConstantsCenterStage {
     // The CameraId identifies each unique camera and its position on
     // the robot.
     public enum InternalWebcamId {
-        FRONT_WEBCAM, REAR_WEBCAM,
-        WEBCAM_NPOS
+        FRONT_WEBCAM, REAR_WEBCAM, WEBCAM_NPOS
     }
 
     public enum ProcessorIdentifier {
-        RAW_FRAME, APRIL_TAG, SPIKE_WINDOW, PIXEL_COUNT, PROCESSOR_NPOS
+        RAW_FRAME, APRIL_TAG, CAMERA_STREAM_PREVIEW, PROCESSOR_NPOS
     }
 
     public enum TeamPropRecognitionPath {
@@ -85,37 +85,6 @@ public class RobotConstantsCenterStage {
 
         public int getRedBackdropAprilTagId() {
             return redBackdropAprilTagId;
-        }
-    }
-
-    // AprilTag identifiers
-    public enum AprilTagId {
-        TAG_ID_NPOS(-1),
-        TAG_ID_1(1), TAG_ID_2(2), TAG_ID_3(3),
-        TAG_ID_4(4), TAG_ID_5(5), TAG_ID_6(6),
-        TAG_ID_7(7), TAG_ID_8(8), TAG_ID_9(9),
-        TAG_ID_10(10);
-
-        private final int numericAprilTagId;
-
-        AprilTagId(int pNumericId) {
-            numericAprilTagId = pNumericId;
-        }
-
-        public int getNumericId() {
-            return numericAprilTagId;
-        }
-
-        // Given the numeric id of an AprilTag return its
-        // enumeration.
-        public static AprilTagId getEnumValue(int pNumericId) {
-            AprilTagId[] tagValues = AprilTagId.values();
-            for (AprilTagId tagValue : tagValues) {
-                if (tagValue.numericAprilTagId == pNumericId)
-                    return tagValue;
-            }
-
-            return AprilTagId.TAG_ID_NPOS; // no match
         }
     }
 

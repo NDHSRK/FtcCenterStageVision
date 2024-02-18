@@ -1,6 +1,7 @@
-package org.firstinspires.ftc.teamcode.common;
+package org.firstinspires.ftc.teamcode.xml;
 
 import org.firstinspires.ftc.ftcdevcommon.Pair;
+import org.firstinspires.ftc.teamcode.common.RobotConstantsCenterStage;
 
 import java.util.EnumMap;
 
