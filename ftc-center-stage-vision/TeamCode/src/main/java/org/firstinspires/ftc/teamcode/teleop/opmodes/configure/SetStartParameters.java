@@ -2,12 +2,12 @@ package org.firstinspires.ftc.teamcode.teleop.opmodes.configure;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.ftcdevcommon.AutonomousRobotException;
 import org.firstinspires.ftc.ftcdevcommon.platform.android.WorkingDirectory;
 import org.firstinspires.ftc.teamcode.common.RobotConstants;
 import org.firstinspires.ftc.teamcode.common.RobotConstantsCenterStage;
+import org.firstinspires.ftc.teamcode.common.RobotLogCommon;
 import org.firstinspires.ftc.teamcode.xml.StartParameters;
 import org.firstinspires.ftc.teamcode.xml.StartParametersXML;
 import org.firstinspires.ftc.teamcode.teleop.common.FTCButton;
@@ -73,6 +73,8 @@ public class SetStartParameters extends LinearOpMode {
 
     @Override
     public void runOpMode() {
+        RobotLogCommon.c(TAG, "Initializing SetStartParameters");
+
         // Toggle button for switching between standard mode and Qualia mode.
         // DPAD left toggle button position A (default) is the standard button layout.
         // DPAD left Toggle button position B is the Qualia layout.
@@ -110,7 +112,7 @@ public class SetStartParameters extends LinearOpMode {
         if (opModeIsActive()) {
             if (startParametersXMLChanged) {
                 startParametersXML.writeStartParametersFile();
-                RobotLog.ii(TAG, "Writing StartParameters.xml");
+               RobotLogCommon.i(TAG, "Writing StartParameters.xml");
                 telemetry.addLine("Writing StartParameters.xml");
             } else
                 // Do not output if factory reset has been executed.
@@ -310,7 +312,7 @@ public class SetStartParameters extends LinearOpMode {
 
         // Write out the XML file.
         startParametersXML.writeStartParametersFile();
-        RobotLog.ii(TAG, "Writing StartParameters.xml");
+       RobotLogCommon.i(TAG, "Writing StartParameters.xml");
         telemetry.addLine("Writing StartParameters.xml");
         telemetry.update();
         sleep(1500);

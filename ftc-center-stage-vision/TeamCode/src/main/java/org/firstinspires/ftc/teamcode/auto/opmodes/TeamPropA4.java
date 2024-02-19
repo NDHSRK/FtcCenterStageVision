@@ -31,12 +31,12 @@ package org.firstinspires.ftc.teamcode.auto.opmodes;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.ftcdevcommon.AutonomousRobotException;
 import org.firstinspires.ftc.teamcode.auto.opmodes.common.TeamPropAuto;
 import org.firstinspires.ftc.teamcode.common.RobotConstants;
 import org.firstinspires.ftc.teamcode.common.RobotConstantsCenterStage;
+import org.firstinspires.ftc.teamcode.common.RobotLogCommon;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
@@ -71,7 +71,7 @@ public class TeamPropA4 extends LinearOpMode {
         // Perform Team Prop recognition.
         RobotConstantsCenterStage.TeamPropLocation location = teamPropAuto.runTeamPropRecognition();
 
-        RobotLog.dd(TAG, "Team Prop Location " + location);
+        RobotLogCommon.d(TAG, "Team Prop Location " + location);
         telemetry.addData("Team Prop Location: ", location);
         telemetry.addData("Path", "Complete");
         telemetry.update();

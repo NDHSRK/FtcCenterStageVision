@@ -4,19 +4,30 @@ package org.firstinspires.ftc.teamcode.auto.vision;
 
 import android.graphics.Bitmap;
 
-import com.qualcomm.robotcore.util.RobotLog;
-
 import org.firstinspires.ftc.ftcdevcommon.AutonomousRobotException;
 import org.firstinspires.ftc.ftcdevcommon.Pair;
 import org.firstinspires.ftc.teamcode.common.RobotLogCommon;
 import org.firstinspires.ftc.teamcode.xml.VisionParameters;
 import org.opencv.android.Utils;
-import org.opencv.core.*;
+import org.opencv.core.Core;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfFloat;
+import org.opencv.core.MatOfInt;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.Point;
+import org.opencv.core.Rect;
+import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.imgproc.Moments;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 // 5/20/2023 Added support for not writing out files via a null test
@@ -38,7 +49,7 @@ public class ImageUtils {
             throw new AutonomousRobotException(TAG, "At least one ROI dimension was 0");
 
         Mat roi = new Mat(pSrcImage, pROIDefinition);
-        RobotLog.vv(TAG, "Image ROI x " + pROIDefinition.x + ", y " + pROIDefinition.y + ", width " + pROIDefinition.width + ", height " + pROIDefinition.height);
+        RobotLogCommon.v(TAG, "Image ROI x " + pROIDefinition.x + ", y " + pROIDefinition.y + ", width " + pROIDefinition.width + ", height " + pROIDefinition.height);
         return roi;
     }
 
@@ -51,11 +62,11 @@ public class ImageUtils {
     public static Mat preProcessImage(Mat pOriginalImage, String pPreamble, VisionParameters.ImageParameters pImageParameters) {
         if (pPreamble != null) {
             String imageFilename = pPreamble + "_IMG.png";
-            RobotLog.dd(TAG, "Writing original image " + imageFilename);
+            RobotLogCommon.d(TAG, "Writing original image " + imageFilename);
             Imgcodecs.imwrite(imageFilename, pOriginalImage);
         }
 
-        RobotLog.vv(TAG, "Image width " + pOriginalImage.cols() + ", height " + pOriginalImage.rows());
+        RobotLogCommon.v(TAG, "Image width " + pOriginalImage.cols() + ", height " + pOriginalImage.rows());
         if ((pOriginalImage.cols() != pImageParameters.resolution_width) ||
                 (pOriginalImage.rows() != pImageParameters.resolution_height))
             throw new AutonomousRobotException(TAG,
@@ -71,7 +82,7 @@ public class ImageUtils {
 
         if (pPreamble != null) {
             String imageFilename = pPreamble + "_ROI.png";
-            RobotLog.dd(TAG, "Writing image ROI " + imageFilename);
+            RobotLogCommon.d(TAG, "Writing image ROI " + imageFilename);
             Imgcodecs.imwrite(imageFilename, imageROI);
         }
 
@@ -81,14 +92,14 @@ public class ImageUtils {
     // Adjust the median of a grayscale image.
     public static Mat adjustGrayscaleMedian(Mat pGray, int pTarget) {
         int medianGray = getSingleChannelMedian(pGray);
-        RobotLog.dd(TAG, "Original image: grayscale median " + medianGray);
-        RobotLog.dd(TAG, "Grayscale median target " + pTarget);
+        RobotLogCommon.d(TAG, "Original image: grayscale median " + medianGray);
+        RobotLogCommon.d(TAG, "Grayscale median target " + pTarget);
 
         // adjustment = target - median;
         int adjustment = pTarget - medianGray;
         Mat adjustedGray = new Mat();
         pGray.convertTo(adjustedGray, -1, 1, adjustment);
-        RobotLog.dd(TAG, "Grayscale adjustment " + adjustment);
+        RobotLogCommon.d(TAG, "Grayscale adjustment " + adjustment);
 
         return adjustedGray;
     }
@@ -105,8 +116,8 @@ public class ImageUtils {
         // Get the median of the V channel.
         int medianValue = getColorChannelMedian(channels.get(2), new Mat());
 
-        RobotLog.dd(TAG, "HSV saturation channel median " + medianSaturation);
-        RobotLog.dd(TAG, "HSV value channel median " + medianValue);
+        RobotLogCommon.d(TAG, "HSV saturation channel median " + medianSaturation);
+        RobotLogCommon.d(TAG, "HSV value channel median " + medianValue);
 
         // adjustment = target - median;
         int satAdjustment = pSatMedianTarget - medianSaturation;
@@ -114,8 +125,8 @@ public class ImageUtils {
         channels.get(1).convertTo(channels.get(1), -1, 1, satAdjustment);
         channels.get(2).convertTo(channels.get(2), -1, 1, valAdjustment);
 
-        RobotLog.dd(TAG, "Adjust HSV saturation by " + satAdjustment + " to " + pSatMedianTarget);
-        RobotLog.dd(TAG, "Adjust HSV value by " + valAdjustment + " to " + pValMedianTarget);
+        RobotLogCommon.d(TAG, "Adjust HSV saturation by " + satAdjustment + " to " + pSatMedianTarget);
+        RobotLogCommon.d(TAG, "Adjust HSV value by " + valAdjustment + " to " + pValMedianTarget);
 
         // Merge the channels back together.
         Mat adjustedImage = new Mat();
@@ -142,19 +153,19 @@ public class ImageUtils {
         // normalize(hue_hist, hue_hist, 0, hue_hist.rows, NORM_MINMAX, -1, Mat());
 
         //## DEBUG
-        //RobotLog.d(TAG, "Hue histogram: bins");
+        //RobotLogCommon.d(TAG, "Hue histogram: bins");
         //for (int i = 0; i < 180; i++)
         //  if (hue_hist.at<float>(i) != 0.0f)
-        //	RobotLog.d(TAG, "Bin " + to_string(i) + " = " + to_string(hue_hist.at<float>(i)));
+        //	RobotLogCommon.d(TAG, "Bin " + to_string(i) + " = " + to_string(hue_hist.at<float>(i)));
 
         // Get the bin with the greatest pixel count.
         Core.MinMaxLocResult mmlResult = Core.minMaxLoc(hueHist);
-        RobotLog.dd(TAG, "Hue histogram: largest bin x " + mmlResult.maxLoc.x + ", y " + mmlResult.maxLoc.y + ", count " + mmlResult.maxVal);
+        RobotLogCommon.d(TAG, "Hue histogram: largest bin x " + mmlResult.maxLoc.x + ", y " + mmlResult.maxLoc.y + ", count " + mmlResult.maxVal);
 
         // The y-coordinate of the maxLoc Point contains the index to the bin
         // with the greatest value. The index to the bin is the hue itself.
         int dominantHue = (int) mmlResult.maxLoc.y;
-        RobotLog.dd(TAG, "HSV dominant hue " + dominantHue);
+        RobotLogCommon.d(TAG, "HSV dominant hue " + dominantHue);
 
         return dominantHue;
     }
@@ -185,7 +196,7 @@ public class ImageUtils {
             Mat adjustedBGR = new Mat();
             Imgproc.cvtColor(adjusted, adjustedBGR, Imgproc.COLOR_HSV2BGR);
             Imgcodecs.imwrite(pOutputFilenamePreamble + "_ADJ" + pFilenameSuffix + ".png", adjustedBGR);
-            RobotLog.vv(TAG, "Writing " + pOutputFilenamePreamble + "_ADJ" + pFilenameSuffix + ".png");
+            RobotLogCommon.v(TAG, "Writing " + pOutputFilenamePreamble + "_ADJ" + pFilenameSuffix + ".png");
         }
 
          Mat thresholded = applyInRange(adjusted,  pHSVParameters.hue_low, pHSVParameters.hue_high,
@@ -193,7 +204,7 @@ public class ImageUtils {
 
         if (pOutputFilenamePreamble != null) {
             Imgcodecs.imwrite(pOutputFilenamePreamble + "_ADJ_THR" + pFilenameSuffix + ".png", thresholded);
-            RobotLog.dd(TAG, "Writing " + pOutputFilenamePreamble + "_ADJ_THR" + pFilenameSuffix + ".png");
+            RobotLogCommon.d(TAG, "Writing " + pOutputFilenamePreamble + "_ADJ_THR" + pFilenameSuffix + ".png");
         }
 
         return thresholded;
@@ -206,8 +217,8 @@ public class ImageUtils {
     public static Mat applyInRange(Mat pAdjustedMedianROI,
                                    int pHueLow, int pHueHigh,
                                    int pSatLowThreshold, int pValLowThreshold) {
-        RobotLog.dd(TAG, "Actual inRange HSV arguments: hue low " + pHueLow + ", hue high " + pHueHigh);
-        RobotLog.dd(TAG, "Actual inRange HSV arguments: saturation low " + pSatLowThreshold + ", value low " + pValLowThreshold);
+        RobotLogCommon.d(TAG, "Actual inRange HSV arguments: hue low " + pHueLow + ", hue high " + pHueHigh);
+        RobotLogCommon.d(TAG, "Actual inRange HSV arguments: saturation low " + pSatLowThreshold + ", value low " + pValLowThreshold);
 
         // Sanity check for hue.
         if (!((pHueLow >= 0 && pHueLow <= 180) && (pHueHigh >= 0 && pHueHigh <= 180) &&
@@ -275,7 +286,7 @@ public class ImageUtils {
 
         if (pOutputFilenamePreamble != null && (RobotLogCommon.isLoggable("v") || RobotLogCommon.usingFTCRobotLog())) {
             Imgcodecs.imwrite(pOutputFilenamePreamble + "_GRAY.png", grayROI);
-            RobotLog.vv(TAG, "Writing " + pOutputFilenamePreamble + "_GRAY.png");
+            RobotLogCommon.v(TAG, "Writing " + pOutputFilenamePreamble + "_GRAY.png");
         }
 
         return performThresholdOnGray(grayROI, pOutputFilenamePreamble, pGrayscaleMedianTarget, pLowThreshold);
@@ -286,14 +297,14 @@ public class ImageUtils {
         Mat adjustedGray = adjustGrayscaleMedian(pGrayInputROI, pGrayscaleMedianTarget);
         if (pOutputFilenamePreamble != null && (RobotLogCommon.isLoggable("v") || RobotLogCommon.usingFTCRobotLog())) {
             Imgcodecs.imwrite(pOutputFilenamePreamble + "_ADJ.png", adjustedGray);
-            RobotLog.vv(TAG, "Writing adjusted grayscale image " + pOutputFilenamePreamble + "_ADJ.png");
+            RobotLogCommon.v(TAG, "Writing adjusted grayscale image " + pOutputFilenamePreamble + "_ADJ.png");
         }
 
         Mat thresholded = applyGrayThreshold(adjustedGray, pLowThreshold);
 
         if (pOutputFilenamePreamble != null) {
             Imgcodecs.imwrite(pOutputFilenamePreamble + "_ADJ_THR.png", thresholded);
-            RobotLog.dd(TAG, "Writing " + pOutputFilenamePreamble + "_ADJ_THR.png");
+            RobotLogCommon.d(TAG, "Writing " + pOutputFilenamePreamble + "_ADJ_THR.png");
         }
 
         return thresholded;
@@ -314,7 +325,7 @@ public class ImageUtils {
         Mat blurred = new Mat();
         Imgproc.GaussianBlur(morphed, blurred, new Size(5, 5), 0);
 
-        RobotLog.vv(TAG, "Threshold values: low " + pGrayLowThreshold + ", high 255");
+        RobotLogCommon.v(TAG, "Threshold values: low " + pGrayLowThreshold + ", high 255");
 
         // Threshold the image: set pixels over the threshold value to white.
         Mat thresholded = new Mat(); // output binary image
@@ -369,12 +380,12 @@ public class ImageUtils {
             return Optional.empty();
 
         // Within the ROI draw all of the contours.
-        RobotLog.dd(TAG, "Number of contours " + contours.size());
+        RobotLogCommon.d(TAG, "Number of contours " + contours.size());
         if (pOutputFilenamePreamble != null && (RobotLogCommon.isLoggable("v") || RobotLogCommon.usingFTCRobotLog())) {
             Mat contoursDrawn = pImageROI.clone();
             ShapeDrawing.drawShapeContours(contours, contoursDrawn);
             Imgcodecs.imwrite(pOutputFilenamePreamble + "_CON.png", contoursDrawn);
-            RobotLog.vv(TAG, "Writing " + pOutputFilenamePreamble + "_CON.png");
+            RobotLogCommon.v(TAG, "Writing " + pOutputFilenamePreamble + "_CON.png");
         }
 
         // See how this works here:
@@ -406,8 +417,8 @@ public class ImageUtils {
         // Get the median of the V channel.
         int medianValue = getColorChannelMedian(channels.get(2), new Mat());
 
-        RobotLog.dd(TAG, "HSV saturation channel median " + medianSaturation);
-        RobotLog.dd(TAG, "HSV value channel median " + medianValue);
+        RobotLogCommon.d(TAG, "HSV saturation channel median " + medianSaturation);
+        RobotLogCommon.d(TAG, "HSV value channel median " + medianValue);
 
         return Pair.create(medianSaturation, medianValue);
     }

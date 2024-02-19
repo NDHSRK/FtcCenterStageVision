@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.auto.vision;
 
-import com.qualcomm.robotcore.util.RobotLog;
-
 import org.firstinspires.ftc.teamcode.common.RobotLogCommon;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
@@ -50,7 +48,7 @@ public class ShapeDrawing {
 
         if (pOutputFilenamePreamble != null && RobotLogCommon.isLoggable("v")) {
             Imgcodecs.imwrite(pOutputFilenamePreamble + "NO_BRECT.png", pImageROI);
-            RobotLog.dd(TAG, "Writing " + pOutputFilenamePreamble + "NO_BRECT.png");
+            RobotLogCommon.d(TAG, "Writing " + pOutputFilenamePreamble + "NO_BRECT.png");
         }
     }
 }

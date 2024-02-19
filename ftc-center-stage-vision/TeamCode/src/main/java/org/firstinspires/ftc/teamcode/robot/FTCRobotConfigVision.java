@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.robot;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.ftcdevcommon.AutonomousRobotException;
 import org.firstinspires.ftc.ftcdevcommon.platform.android.WorkingDirectory;
@@ -10,6 +9,7 @@ import org.firstinspires.ftc.ftcdevcommon.xml.XPathAccess;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.common.RobotConstants;
 import org.firstinspires.ftc.teamcode.common.RobotConstantsCenterStage;
+import org.firstinspires.ftc.teamcode.common.RobotLogCommon;
 import org.firstinspires.ftc.teamcode.xml.StartParameters;
 import org.firstinspires.ftc.teamcode.xml.StartParametersXML;
 import org.firstinspires.ftc.teamcode.robot.device.camera.VisionPortalWebcamConfiguration;
@@ -36,7 +36,7 @@ public class FTCRobotConfigVision {
     public FTCRobotConfigVision(LinearOpMode pLinearOpMode, RobotConstants.RunType pRunType) {
         hardwareMap = pLinearOpMode.hardwareMap;
 
-        RobotLog.ii(TAG, TAG + " constructor");
+        RobotLogCommon.c(TAG, TAG + " constructor");
 
         String workingDirectory = WorkingDirectory.getWorkingDirectory();
         String xmlDirectory = workingDirectory + RobotConstants.XML_DIR;
@@ -48,7 +48,7 @@ public class FTCRobotConfigVision {
             // Get the configurable startup parameters.
             StartParametersXML startParametersXML = new StartParametersXML(xmlDirectory);
             startParameters = startParametersXML.getStartParameters();
-            RobotLog.ii(TAG, "Configuring the robot from " + startParameters.robotConfigFilename);
+            RobotLogCommon.c(TAG, "Configuring the robot from " + startParameters.robotConfigFilename);
 
             RobotConfigXML configXML = new RobotConfigXML(startParameters.robotConfigFilename);
             XPathAccess configXPath;
@@ -63,11 +63,11 @@ public class FTCRobotConfigVision {
                 EnumMap<RobotConstantsCenterStage.InternalWebcamId, VisionPortalWebcamConfiguration.ConfiguredWebcam> configuredWebcamsLocal;
                 configXPath = configXML.getPath("VISION_PORTAL_WEBCAM");
                 String webcamYesNo = configXPath.getRequiredTextInRange("@configured", configXPath.validRange("yes", "no"));
-                RobotLog.ii(TAG, "VisionPortal webcam configuration option: " + webcamYesNo);
+                RobotLogCommon.c(TAG, "VisionPortal webcam configuration option: " + webcamYesNo);
 
                 if (webcamYesNo.equals("yes")) {
                     configuredWebcamsLocal = configXML.getConfiguredWebcams();
-                    RobotLog.ii(TAG, "Number of webcams configured " + configuredWebcamsLocal.size());
+                    RobotLogCommon.c(TAG, "Number of webcams configured " + configuredWebcamsLocal.size());
                     if (configuredWebcamsLocal.size() > 2)
                         throw new AutonomousRobotException(TAG, "CenterStage season: only two webcams at mnost are supported");
 
@@ -110,7 +110,7 @@ public class FTCRobotConfigVision {
             // configured camera.
             VisionPortalWebcamConfiguration.ConfiguredWebcam configuredWebcamObject = configuredWebcam.get();
             configuredWebcamObject.setWebcamName(webcamName);
-            RobotLog.ii(TAG, "Webcam hardware device " + webcamId +
+            RobotLogCommon.c(TAG, "Webcam hardware device " + webcamId +
                     " is associated by serial number " + webcamName.getSerialNumber() +
                     " with configured webcam " + configuredWebcamObject.internalWebcamId);
         }

@@ -30,11 +30,11 @@
 package org.firstinspires.ftc.teamcode.auto.opmodes.common;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.ftcdevcommon.AutonomousRobotException;
 import org.firstinspires.ftc.ftcdevcommon.Pair;
 import org.firstinspires.ftc.ftcdevcommon.platform.android.WorkingDirectory;
+import org.firstinspires.ftc.teamcode.common.RobotLogCommon;
 import org.firstinspires.ftc.teamcode.xml.BackdropParameters;
 import org.firstinspires.ftc.teamcode.xml.TeamPropParameters;
 import org.firstinspires.ftc.teamcode.auto.vision.TeamPropRecognition;
@@ -101,7 +101,7 @@ public class TeamPropAuto {
         // Read the parameters for team prop recognition from the xml file.
         TeamPropParametersXML teamPropParametersXML = new TeamPropParametersXML(xmlDirectory);
         teamPropParameters = teamPropParametersXML.getTeamPropParameters();
-        RobotLog.ii(TAG, "Done parsing TeamPropParameters.xml");
+        RobotLogCommon.c(TAG, "Done parsing TeamPropParameters.xml");
 
         // Note: if no COMPETITION or AUTO_TEST OpMode in RobotAction.XML contains
         // the action FIND_TEAM_PROP then collectedSpikeWindowData will be empty.
@@ -115,7 +115,7 @@ public class TeamPropAuto {
         BackdropParametersXML backdropParametersXML = new BackdropParametersXML(xmlDirectory);
         backdropParameters = backdropParametersXML.getBackdropParameters();
 
-        RobotLog.ii(TAG, "Done parsing BackdropParameters.xml");
+        RobotLogCommon.c(TAG, "Done parsing BackdropParameters.xml");
 
         // Start the front webcam with the raw webcam frame processor.
         // We can start a camera by using the <START_CAMERA> action in RobotAction.xml
@@ -180,7 +180,7 @@ public class TeamPropAuto {
         // Get the recognition path from the XML file.
         RobotConstantsCenterStage.TeamPropRecognitionPath teamPropRecognitionPath =
                 opModeSpikeWindowMapping.recognitionPath;
-        RobotLog.dd(TAG, "Recognition path " + teamPropRecognitionPath);
+        RobotLogCommon.d(TAG, "Recognition path " + teamPropRecognitionPath);
 
         // Perform image recognition.
         TeamPropRecognition teamPropRecognition = new TeamPropRecognition(alliance);
@@ -192,7 +192,7 @@ public class TeamPropAuto {
             finalTeamPropLocation = RobotConstantsCenterStage.TeamPropLocation.CENTER_SPIKE;
             linear.telemetry.addLine("Error in computer vision subsystem; using default location");
             linear.telemetry.update();
-            RobotLog.dd(TAG, "Error in computer vision subsystem; using default location of CENTER_SPIKE");
+            RobotLogCommon.d(TAG, "Error in computer vision subsystem; using default location of CENTER_SPIKE");
         } else {
             finalTeamPropLocation = teamPropReturn.teamPropLocation;
         }
