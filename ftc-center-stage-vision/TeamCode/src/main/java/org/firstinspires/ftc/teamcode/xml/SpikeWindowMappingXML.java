@@ -1,11 +1,10 @@
 package org.firstinspires.ftc.teamcode.xml;
 
-import com.qualcomm.robotcore.util.RobotLog;
-
 import org.firstinspires.ftc.ftcdevcommon.AutonomousRobotException;
 import org.firstinspires.ftc.ftcdevcommon.Pair;
 import org.firstinspires.ftc.ftcdevcommon.xml.XMLUtils;
 import org.firstinspires.ftc.teamcode.common.RobotConstantsCenterStage;
+import org.firstinspires.ftc.teamcode.common.RobotLogCommon;
 import org.opencv.core.Rect;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -47,7 +46,7 @@ public class SpikeWindowMappingXML {
 
     public SpikeWindowMappingXML(String pRobotActionFilename) throws ParserConfigurationException, SAXException, IOException {
 
-        RobotLog.ii(TAG, "Parsing spike window mapping from " + pRobotActionFilename);
+        RobotLogCommon.c(TAG, "Parsing spike window mapping from " + pRobotActionFilename);
     /*
     // IntelliJ only
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -82,7 +81,7 @@ public class SpikeWindowMappingXML {
     // for one Autonomous OpMode from RobotAction.xml. May return null
     // if the OpMode does not contain a <FIND_TEAM_PROP> element.
     public SpikeWindowMapping collectSpikeWindowMapping(RobotConstantsCenterStage.OpMode pOpMode) throws XPathExpressionException {
-        RobotLog.ii(TAG, "Collecting Team Prop data for Autonomous OpMode " + pOpMode);
+        RobotLogCommon.c(TAG, "Collecting Team Prop data for Autonomous OpMode " + pOpMode);
         return getSpikeWindowMapping(pOpMode);
     }
 
@@ -100,7 +99,7 @@ public class SpikeWindowMappingXML {
         for (RobotConstantsCenterStage.OpMode oneOpMode : allOpModes) {
             if (oneOpMode.getOpModeType() == RobotConstantsCenterStage.OpMode.OpModeType.COMPETITION ||
                     oneOpMode.getOpModeType() == RobotConstantsCenterStage.OpMode.OpModeType.AUTO_TEST) {
-                RobotLog.ii(TAG, "Collecting Team Prop data for Autonomous OpMode " + oneOpMode);
+                RobotLogCommon.c(TAG, "Collecting Team Prop data for Autonomous OpMode " + oneOpMode);
                 spikeDataOneOpMode = getSpikeWindowMapping(oneOpMode);
                 if (spikeDataOneOpMode != null)
                     spikeWindowMapping.put(oneOpMode, spikeDataOneOpMode);
@@ -121,11 +120,11 @@ public class SpikeWindowMappingXML {
         String findTeamPropPath = "/RobotAction/OpMode[@id=" + "'" + pOpMode + "']" + "/actions/FIND_TEAM_PROP";
         Node find_team_propNode = (Node) xpath.evaluate(findTeamPropPath, document, XPathConstants.NODE);
         if (find_team_propNode == null) {
-            // RobotLog.dd(TAG, "No path to " + pOpMode + "/FIND_TEAM_PROP");
+            // RobotLogCommon.dd(TAG, "No path to " + pOpMode + "/FIND_TEAM_PROP");
             return null;
         }
 
-        RobotLog.ii(TAG, "Extracting data from RobotAction.xml for " + findTeamPropPath);
+        RobotLogCommon.c(TAG, "Extracting data from RobotAction.xml for " + findTeamPropPath);
 
         // The next element in the XML is required: <image_parameters>
         Node image_node = find_team_propNode.getFirstChild();

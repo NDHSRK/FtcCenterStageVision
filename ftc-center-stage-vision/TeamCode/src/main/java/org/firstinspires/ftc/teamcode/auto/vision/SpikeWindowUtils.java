@@ -1,12 +1,12 @@
 package org.firstinspires.ftc.teamcode.auto.vision;
 
-import com.qualcomm.robotcore.util.RobotLog;
-
+import org.firstinspires.ftc.ftcdevcommon.AutonomousRobotException;
 import org.firstinspires.ftc.ftcdevcommon.Pair;
 import org.firstinspires.ftc.ftcdevcommon.platform.android.TimeStamp;
 import org.firstinspires.ftc.ftcdevcommon.platform.android.WorkingDirectory;
 import org.firstinspires.ftc.teamcode.common.RobotConstants;
 import org.firstinspires.ftc.teamcode.common.RobotConstantsCenterStage;
+import org.firstinspires.ftc.teamcode.common.RobotLogCommon;
 import org.firstinspires.ftc.teamcode.xml.SpikeWindowMapping;
 import org.firstinspires.ftc.teamcode.robot.device.camera.ImageProvider;
 import org.opencv.core.Mat;
@@ -34,7 +34,7 @@ public class SpikeWindowUtils {
     public Mat overlaySpikeWindows(ImageProvider pImageProvider,
                                             String pImageFilename,
                                             SpikeWindowMapping pSpikeWindowMapping) throws InterruptedException {
-        RobotLog.dd(TAG, "In " + TAG + ". showSpikeWindowLayout");
+        RobotLogCommon.d(TAG, "In " + TAG + ". showSpikeWindowLayout");
 
         // LocalDateTime requires Android minSdkVersion 26  public Pair<Mat, LocalDateTime> getImage() throws InterruptedException;
         Pair<Mat, Date> teamPropImage = pImageProvider.getImage();
@@ -53,7 +53,12 @@ public class SpikeWindowUtils {
                                   EnumMap<RobotConstantsCenterStage.SpikeLocationWindow, Pair<Rect, RobotConstantsCenterStage.TeamPropLocation>> pSpikeWindows,
                                   String pOutputFilenamePreamble) {
         Pair<Rect, RobotConstantsCenterStage.TeamPropLocation> leftWindow = pSpikeWindows.get(RobotConstantsCenterStage.SpikeLocationWindow.LEFT);
+        if (leftWindow == null)
+            throw new AutonomousRobotException(TAG, "pSpikeWindows key for LEFT is null");
+
         Pair<Rect, RobotConstantsCenterStage.TeamPropLocation> rightWindow = pSpikeWindows.get(RobotConstantsCenterStage.SpikeLocationWindow.RIGHT);
+        if (rightWindow == null)
+            throw new AutonomousRobotException(TAG, "pSpikeWindows key for RIGHT is null");
 
         // Draw the spike windows on the ROI
         // so that we can see their placement during debugging.
@@ -71,7 +76,7 @@ public class SpikeWindowUtils {
 
         if (pOutputFilenamePreamble != null) {
             String teamPropFilename = pOutputFilenamePreamble + "_SPIKE.png";
-            RobotLog.d(TAG, "Writing " + teamPropFilename);
+            RobotLogCommon.d(TAG, "Writing " + teamPropFilename);
             Imgcodecs.imwrite(teamPropFilename, pPropOut);
         }
     }
